@@ -1,0 +1,22 @@
+.gitignore
+# Node / React
+node_modules/
+dist/
+.env
+.vite/
+
+# Python / Flask
+venv/
+__pycache__/
+*.pyc
+instance/
+*.sqlite3
+*.db
+.env
+
+# Logs
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db
