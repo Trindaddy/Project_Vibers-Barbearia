@@ -16,14 +16,19 @@ function LandingPage() {
 
       <div className="main-content">
         <div className="slogan">
-          <h1>ESTILO<br />UNICO SEM</h1>
+          <h1>
+            ESTILO
+            <br />
+            UNICO SEM
+          </h1>
           <span className="destaque">Gastar</span>
         </div>
       </div>
 
       <div className="botao-container">
         <button onClick={irParaAgendamento}>
-          Agende seu horário →
+          Agende seu horário{" "}
+          <span className="material-symbols-outlined">arrow_forward</span>
         </button>
       </div>
     </div>
