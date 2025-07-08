@@ -10,23 +10,21 @@ function LandingPage() {
 
   return (
     <div className="landing-container">
-      {/* Cabeçalho */}
       <div className="header">
         <h3>Viber’s Barbearias</h3>
       </div>
 
-      {/* Texto central */}
-      <div className="slogan">
-        <h1>
-          ESTILO <br />
-          UNICO SEM
-        </h1>
-        <h1 className="destaque">Gastar</h1>
+      <div className="main-content">
+        <div className="slogan">
+          <h1>ESTILO<br />UNICO SEM</h1>
+          <span className="destaque">Gastar</span>
+        </div>
       </div>
 
-      {/* Rodapé com botão */}
       <div className="botao-container">
-        <button onClick={irParaAgendamento}>Agende seu horário →</button>
+        <button onClick={irParaAgendamento}>
+          Agende seu horário →
+        </button>
       </div>
     </div>
   );
