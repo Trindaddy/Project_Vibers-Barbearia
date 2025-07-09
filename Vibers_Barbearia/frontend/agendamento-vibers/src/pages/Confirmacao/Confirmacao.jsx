@@ -8,10 +8,6 @@ function Confirmacao() {
     navigate("/agendamento");
   };
 
-  const handleVoltarInicio = () => {
-    navigate("/");
-  };
-
   return (
     <div className="pagina-confirmacao">
       <h3>Viber’s Barbearias</h3>
@@ -29,24 +25,20 @@ function Confirmacao() {
         <div className="resumo">
           <p>
             <span className="material-symbols-outlined">calendar_month</span>{" "}
-            <strong>Data:</strong> 10/07/2025
+            <strong>Data:</strong> 
           </p>
           <p>
             <span className="material-symbols-outlined">schedule</span>{" "}
-            <strong>Horário:</strong> 14:00
+            <strong>Horário:</strong> 
           </p>
           <p>
             <span className="material-symbols-outlined">location_on</span>{" "}
-            <strong>Unidade:</strong> Asa Norte
+            <strong>Unidade:</strong> 
           </p>
         </div>
       </div>
 
       <div className="botoes">
-        <button onClick={handleVoltarInicio}>
-          Voltar{" "}
-          <span className="material-symbols-outlined">arrow_forward</span>
-        </button>
         <button onClick={handleNovoAgendamento}>
           Novo Agendamento{" "}
           <span className="material-symbols-outlined">arrow_forward</span>
