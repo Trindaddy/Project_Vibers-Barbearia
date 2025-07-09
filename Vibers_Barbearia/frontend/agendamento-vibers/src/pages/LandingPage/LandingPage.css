@@ -127,14 +127,34 @@ body, html, #root {
 
 @media (max-width: 768px) {
   .header, .main-content {
-    padding: 2rem;
+    padding: 1rem;
   }
 
   .slogan h1 {
-    font-size: 2.5rem;
+    font-size: 2.2rem;
   }
 
   .slogan .destaque {
-    font-size: 3rem;
+    font-size: 2.8rem;
+  }
+
+  .botao-container button {
+    padding: 0.8rem 2rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .slogan h1 {
+    font-size: 1.6rem;
+  }
+
+  .slogan .destaque {
+    font-size: 2.2rem;
+  }
+
+  .botao-container button {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.85rem;
   }
 }

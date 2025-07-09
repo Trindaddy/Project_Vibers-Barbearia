@@ -102,3 +102,43 @@
 .botoes button:hover {
   background-color: #e0b12f;
 }
+
+@media (max-width: 768px) {
+  .mensagem-central h1 {
+    font-size: 2rem;
+  }
+
+  .pagina-confirmacao h3 {
+    font-size: 1.4rem;
+  }
+
+  .descricao, .resumo {
+    margin-left: 1rem;
+    font-size: 1rem;
+  }
+
+  .botoes {
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .botoes button {
+    width: 80%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .mensagem-central h1 {
+    font-size: 1.5rem;
+  }
+
+  .check-icon .material-symbols-outlined {
+    font-size: 60px;
+  }
+
+  .resumo p {
+    font-size: 0.95rem;
+  }
+}
