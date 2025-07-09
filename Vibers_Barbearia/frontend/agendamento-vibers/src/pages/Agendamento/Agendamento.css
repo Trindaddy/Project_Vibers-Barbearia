@@ -7,14 +7,17 @@ body, html {
   background-color: #FAE6B1;
   height: 100%;
   width: 100%;
+  overflow-y: auto;
 }
 
 .pagina-agendamento {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 0 1rem 2rem; /* espaço para os botões no final */
+  height: auto;
   min-height: 100vh;
-  padding: 0 1rem;
+  box-sizing: border-box;
 }
 
 .titulo {
@@ -74,10 +77,14 @@ input {
 
 .botao-container {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 3rem;
+  align-items: center;
+  gap: 1.2rem;
   margin-top: 1.5rem;
-  width: 1880px;
+  width: 100%;
+  max-width: 600px;
+  padding: 1rem 0;
 }
 
 .botao-container button {
@@ -92,7 +99,7 @@ input {
   align-items: center;
   gap: 0.5rem;
   font-family: 'Poppins', sans-serif;
-  border-radius: 3px;
+  border-radius: 4px;
   box-shadow: none;
   transition: background-color 0.3s;
 }
