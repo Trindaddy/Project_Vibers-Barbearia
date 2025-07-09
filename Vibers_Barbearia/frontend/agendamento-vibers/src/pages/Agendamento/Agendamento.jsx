@@ -5,22 +5,19 @@ function Agendamento() {
   const navigate = useNavigate();
 
   const handleCancelar = () => {
-    navigate("/"); // Volta para a LandingPage
+    navigate("/");
   };
 
   const handleContinuar = () => {
-    // Aqui você pode adicionar validação ou redirecionar para a próxima etapa
-    alert("Agendamento continuado!"); // Apenas exemplo
+    alert("Agendamento concluído!");
   };
 
   return (
     <div className="pagina-agendamento">
-      <div className="landing-container">
-        <div className="header">
-          <h3>Viber’s Barbearias</h3>
-        </div>
+      <h1 className="titulo">Viber’s Barbearia</h1>
 
-        <div className="main-content">
+      <div className="container-form">
+        <div className="top-box">
           <h2>Agende o seu horário</h2>
           <p>
             Agende seu horário com facilidade! Basta selecionar o melhor
@@ -41,21 +38,20 @@ function Agendamento() {
           <label htmlFor="data">Data</label>
           <input type="text" id="data" placeholder="dd/mm/aaaa" />
 
-          <label htmlFor="horario">Horario</label>
+          <label htmlFor="horario">Horário</label>
           <input type="text" id="horario" placeholder="Selecione o seu horário" />
         </form>
+      </div>
 
-        <div className="botao-container">
-          <button onClick={handleCancelar}>
-            Cancelar
-            <span className="material-symbols-outlined">arrow_forward</span>
-          </button>
-
-          <button onClick={handleContinuar}>
-            Continuar
-            <span className="material-symbols-outlined">arrow_forward</span>
-          </button>
-        </div>
+      <div className="botao-container">
+        <button onClick={handleCancelar}>
+          Cancelar
+          <span className="material-symbols-outlined">arrow_forward</span>
+        </button>
+        <button onClick={handleContinuar}>
+          Continuar
+          <span className="material-symbols-outlined">arrow_forward</span>
+        </button>
       </div>
     </div>
   );
