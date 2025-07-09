@@ -10,6 +10,7 @@ function Agendamento() {
 
   const handleContinuar = () => {
     alert("Agendamento concluído!");
+    navigate("/confirmacao");
   };
 
   return (
