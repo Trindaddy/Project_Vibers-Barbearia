@@ -16,12 +16,12 @@
   font-size: 34px;
   font-weight: 600;
   color: #000;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
 }
 
 .mensagem-central {
   text-align: center;
-  margin-top: 1rem;
+  margin-top: -10rem;
 }
 
 .mensagem-central h1 {
@@ -49,6 +49,7 @@
   color: #555;
   margin-bottom: 2rem;
   max-width: 90%;
+  margin-left: 2.5rem;
 }
 
 .resumo {
@@ -59,7 +60,7 @@
   display: flex;
   flex-direction: column;
   margin-top: 1rem;
-  margin-left: 8.5rem;
+  margin-left: 11rem;
 }
 
 .resumo p {
@@ -74,11 +75,12 @@
 }
 
 .botoes {
+  width: 1880px;
   display: flex;
   justify-content: center;
   gap: 1.5rem;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
+  padding: 2rem 0;
+  background-color: white;
 }
 
 .botoes button {
@@ -94,6 +96,7 @@
   align-items: center;
   gap: 0.5rem;
   transition: background-color 0.3s ease;
+  margin-bottom: 1rem;
 }
 
 .botoes button:hover {
