@@ -4,7 +4,8 @@ body, html, #root {
   width: 100%;
   height: 100%;
   font-family: 'Poppins', sans-serif;
-  overflow: hidden; /* impede qualquer barra de rolagem */
+  overflow: hidden;
+  /* impede qualquer barra de rolagem */
 }
 
 .landing-container {
@@ -29,7 +30,8 @@ body, html, #root {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.3); /* Opcional: overlay para melhor legibilidade */
+  background-color: rgba(0, 0, 0, 0.3);
+  /* Opcional: overlay para melhor legibilidade */
   z-index: 0;
 }
 
@@ -66,10 +68,12 @@ body, html, #root {
 }
 
 .slogan h1 {
-  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
   font-size: 4rem;
-  line-height: 1.1;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+  font-weight: 600;
+  color: #fff;
+  line-height: 1;
+  margin: 0; /* <-- remove espaçamento extra */
 }
 
 .slogan .destaque {
@@ -77,20 +81,24 @@ body, html, #root {
   color: #F2C12E;
   font-size: 5rem;
   font-weight: 700;
-  margin-top: 0.5rem;
+  margin-top: -0.4rem; /* pode até usar negativo pra colar mais */
   display: block;
-  text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
+
 /* Icone de seta para a direita */
 .material-symbols-outlined {
   font-variation-settings:
-    'FILL' 0,
-    'wght' 400,
-    'GRAD' 0,
-    'opsz' 24;
-  vertical-align: middle; /* Alinha verticalmente com o texto */
-  display: inline-flex;    /* Para respeitar o alinhamento */
-  line-height: 1;         /* Evita espaçamento extra */
+    'FILL'0,
+    'wght'400,
+    'GRAD'0,
+    'opsz'24;
+  vertical-align: middle;
+  /* Alinha verticalmente com o texto */
+  display: inline-flex;
+  /* Para respeitar o alinhamento */
+  line-height: 1;
+  /* Evita espaçamento extra */
 }
 
 .botao-container {
@@ -110,7 +118,7 @@ body, html, #root {
   cursor: pointer;
   border-radius: 4px;
   transition: background-color 0.3s;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .botao-container button:hover {
@@ -121,11 +129,11 @@ body, html, #root {
   .header, .main-content {
     padding: 2rem;
   }
-  
+
   .slogan h1 {
     font-size: 2.5rem;
   }
-  
+
   .slogan .destaque {
     font-size: 3rem;
   }
