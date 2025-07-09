@@ -21,8 +21,8 @@ function Agendamento() {
         <div className="top-box">
           <h2>Agende o seu horário</h2>
           <p>
-            Agende seu horário com facilidade! Basta selecionar o melhor
-            horário e pronto!
+            Agende seu horário com facilidade! Basta selecionar o melhor horário
+            e pronto!
           </p>
         </div>
 
@@ -40,18 +40,21 @@ function Agendamento() {
           <input type="text" id="data" placeholder="dd/mm/aaaa" />
 
           <label htmlFor="horario">Horário</label>
-          <input type="text" id="horario" placeholder="Selecione o seu horário" />
+          <input
+            type="text"
+            id="horario"
+            placeholder="Selecione o seu horário"
+          />
         </form>
       </div>
 
       <div className="botao-container">
         <button onClick={handleCancelar}>
-          Cancelar
-          <span className="material-symbols-outlined">arrow_forward</span>
+          <span className="material-symbols-outlined">close</span> Cancelar
         </button>
         <button onClick={handleContinuar}>
+          <span className="material-symbols-outlined">arrow_forward</span>{" "}
           Continuar
-          <span className="material-symbols-outlined">arrow_forward</span>
         </button>
       </div>
     </div>
