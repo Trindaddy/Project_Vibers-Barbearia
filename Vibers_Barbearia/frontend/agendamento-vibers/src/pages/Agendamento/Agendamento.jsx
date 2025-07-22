@@ -1,4 +1,4 @@
-import "./Agendamento.css";
+import styles from './Agendamento.module.css';
 import { useNavigate } from "react-router-dom";
 
 function Agendamento() {
@@ -14,11 +14,11 @@ function Agendamento() {
   };
 
   return (
-    <div className="pagina-agendamento">
-      <h1 className="titulo">Viber’s Barbearia</h1>
+    <div className={styles.paginaAgendamento}>
+      <h1 className={styles.titulo}>Viber’s Barbearia</h1>
 
-      <div className="container-form">
-        <div className="top-box">
+      <div className={styles.containerForm}>
+        <div className={styles.topBox}>
           <h2>Agende o seu horário</h2>
           <p>
             Agende seu horário com facilidade! Basta selecionar o melhor horário
@@ -48,7 +48,7 @@ function Agendamento() {
         </form>
       </div>
 
-      <div className="botao-container">
+      <div className={styles.botaoContainer}>
         <button onClick={handleCancelar}>
           <span className="material-symbols-outlined">close</span> Cancelar
         </button>

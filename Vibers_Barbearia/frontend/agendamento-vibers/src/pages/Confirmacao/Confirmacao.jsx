@@ -1,4 +1,4 @@
-import "./Confirmacao.css";
+import styles from './Confirmacao.module.css';
 import { useNavigate } from "react-router-dom";
 
 function Confirmacao() {
@@ -9,20 +9,20 @@ function Confirmacao() {
   };
 
   return (
-    <div className="pagina-confirmacao">
+    <div className={styles.paginaConfirmacao}>
       <h3>Viber’s Barbearias</h3>
 
-      <div className="mensagem-central">
+      <div className={styles.mensagemCentral}>
         <h1>💈 Nos vemos em breve!</h1>
-        <div className="check-icon">
+        <div className={styles.checkIcon}>
           <span className="material-symbols-outlined">check_circle</span>
         </div>
-        <p className="descricao">
+        <p className={styles.descricao}>
           Você merece esse cuidado! <br />
           Prepare-se para relaxar e sair renovado. Até breve!
         </p>
 
-        <div className="resumo">
+        <div className={styles.resumo}>
           <p>
             <span className="material-symbols-outlined">calendar_month</span>{" "}
             <strong>Data:</strong> 
@@ -38,7 +38,7 @@ function Confirmacao() {
         </div>
       </div>
 
-      <div className="botoes">
+      <div className={styles.botoes}>
         <button onClick={handleNovoAgendamento}>
           Novo Agendamento{" "}
           <span className="material-symbols-outlined">arrow_forward</span>

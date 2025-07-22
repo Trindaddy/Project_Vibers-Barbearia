@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import "./LandingPage.css";
+import styles from './LandingPage.module.css';
 
 function LandingPage() {
   const navigate = useNavigate();
@@ -9,23 +9,23 @@ function LandingPage() {
   };
 
   return (
-    <div className="landing-container">
-      <div className="header">
+    <div className={styles.landingContainer}>
+      <div className={styles.header}>
         <h3>Viber’s Barbearias</h3>
       </div>
 
-      <div className="main-content">
-        <div className="slogan">
+      <div className={styles.mainContent}>
+        <div className={styles.slogan}>
           <h1>
             ESTILO
             <br />
             UNICO SEM
           </h1>
-          <span className="destaque">Gastar</span>
+          <span className={styles.destaque}>Gastar</span>
         </div>
       </div>
 
-      <div className="botao-container">
+      <div className={styles.botaoContainer}>
         <button onClick={irParaAgendamento}>
           Agende seu horário{" "}
           <span className="material-symbols-outlined">arrow_forward</span>

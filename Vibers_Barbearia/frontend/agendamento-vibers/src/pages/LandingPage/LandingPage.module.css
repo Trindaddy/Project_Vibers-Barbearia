@@ -1,14 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@400;500;700&display=swap');
+/* LandingPage.module.css */
 
-body, html, #root {
-  width: 100%;
-  height: 100%;
-  font-family: 'Poppins', sans-serif;
-  overflow: hidden;
-  /* impede qualquer barra de rolagem */
-}
-
-.landing-container {
+.landingContainer {
   width: 100vw;
   height: 100vh;
   background-image: url('/barber-pole.jpg');
@@ -22,8 +14,7 @@ body, html, #root {
   position: relative;
 }
 
-/* Adicione este pseudo-elemento para garantir cobertura total */
-.landing-container::before {
+.landingContainer::before {
   content: '';
   position: absolute;
   top: 0;
@@ -31,17 +22,16 @@ body, html, #root {
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.3);
-  /* Opcional: overlay para melhor legibilidade */
   z-index: 0;
 }
 
-/* Garantir que todo o conteúdo fique acima do overlay */
-.header, .main-content, .botao-container {
+.header,
+.mainContent,
+.botaoContainer {
   position: relative;
   z-index: 1;
 }
 
-/* Restante do seu CSS permanece igual */
 .header {
   padding: 2rem 4rem;
   width: 10%;
@@ -53,7 +43,7 @@ body, html, #root {
   font-size: 1rem;
 }
 
-.main-content {
+.mainContent {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -73,42 +63,34 @@ body, html, #root {
   font-weight: 600;
   color: #fff;
   line-height: 1;
-  margin: 0; /* <-- remove espaçamento extra */
+  margin: 0;
 }
 
-.slogan .destaque {
+.destaque {
   font-family: 'Dancing Script', cursive;
   color: #F2C12E;
   font-size: 5rem;
   font-weight: 700;
-  margin-top: -0.4rem; /* pode até usar negativo pra colar mais */
+  margin-top: -0.4rem;
   display: block;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-/* Icone de seta para a direita */
 .material-symbols-outlined {
-  font-variation-settings:
-    'FILL'0,
-    'wght'400,
-    'GRAD'0,
-    'opsz'24;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   vertical-align: middle;
-  /* Alinha verticalmente com o texto */
   display: inline-flex;
-  /* Para respeitar o alinhamento */
   line-height: 1;
-  /* Evita espaçamento extra */
 }
 
-.botao-container {
+.botaoContainer {
   background-color: #fff;
   padding: 1.5rem 0;
   text-align: center;
   width: 100%;
 }
 
-.botao-container button {
+.botaoContainer button {
   background-color: #F2C12E;
   border: none;
   padding: 1rem 3rem;
@@ -121,12 +103,13 @@ body, html, #root {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.botao-container button:hover {
+.botaoContainer button:hover {
   background-color: #e5b61b;
 }
 
 @media (max-width: 768px) {
-  .header, .main-content {
+  .header,
+  .mainContent {
     padding: 2rem;
   }
 
@@ -134,7 +117,7 @@ body, html, #root {
     font-size: 2.5rem;
   }
 
-  .slogan .destaque {
+  .destaque {
     font-size: 3rem;
   }
 }

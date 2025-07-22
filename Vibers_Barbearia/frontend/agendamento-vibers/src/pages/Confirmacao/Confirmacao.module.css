@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 @import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined");
 
-.pagina-confirmacao {
+.paginaConfirmacao {
   background-color: #FAE6B1;
   height: 100vh;
   font-family: 'Poppins', sans-serif;
@@ -12,33 +12,33 @@
   padding: 2rem 1rem;
 }
 
-.pagina-confirmacao h3 {
+.paginaConfirmacao h3 {
   font-size: 34px;
   font-weight: 600;
   color: #000;
   margin-top: 0.5rem;
 }
 
-.mensagem-central {
+.mensagemCentral {
   text-align: center;
   margin-top: -10rem;
 }
 
-.mensagem-central h1 {
+.mensagemCentral h1 {
   font-size: 54px;
   font-weight: 600;
   margin-bottom: 1.5rem;
   color: #000;
 }
 
-.check-icon {
+.checkIcon {
   display: flex;
   justify-content: center;
   align-items: center;
   margin-bottom: 1.5rem;
 }
 
-.check-icon .material-symbols-outlined {
+.checkIcon .material-symbols-outlined {
   font-size: 101.25px;
   color: #000;
 }
@@ -67,7 +67,7 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  margin-bottom: -4px; /* aproxima os parágrafos entre si */
+  margin-bottom: -4px;
 }
 
 .material-symbols-outlined {
@@ -75,11 +75,11 @@
 }
 
 .botoes {
-  width: 1880px;
+  width: 100%;
   display: flex;
   justify-content: center;
   gap: 1.5rem;
-  padding: 2rem 0;
+  padding: 2.5rem 0;
   background-color: white;
 }
 
