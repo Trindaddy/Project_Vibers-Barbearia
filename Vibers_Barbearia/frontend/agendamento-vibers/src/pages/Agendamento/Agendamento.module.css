@@ -98,7 +98,7 @@ input {
   transition: background-color 0.3s;
 }
 
-.botao-container button:hover {
+.botaoContainer button:hover {
   background-color: #e0b12f;
 }
 
