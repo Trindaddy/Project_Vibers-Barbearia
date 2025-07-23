@@ -2,7 +2,26 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Agendamento.module.css";
 
-function AgendamentoPage() {
+function gerarHorarios(inicio, fim, intervaloMin) {
+  const horarios = [];
+  let [hora, minuto] = inicio.split(":").map(Number);
+  const [fimHora, fimMinuto] = fim.split(":").map(Number);
+
+  while (hora < fimHora || (hora === fimHora && minuto <= fimMinuto)) {
+    const horaStr = String(hora).padStart(2, "0");
+    const minutoStr = String(minuto).padStart(2, "0");
+    horarios.push(`${horaStr}:${minutoStr}`);
+    minuto += intervaloMin;
+    if (minuto >= 60) {
+      minuto -= 60;
+      hora += 1;
+    }
+  }
+
+  return horarios;
+}
+
+const Agendamento = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     nome: "",
@@ -11,152 +30,126 @@ function AgendamentoPage() {
     telefone: "",
     data: "",
     horario: "",
+    unidade: "1",
   });
 
   const [horariosDisponiveis, setHorariosDisponiveis] = useState([]);
+  const [horariosOcupados, setHorariosOcupados] = useState([]);
 
-  // Atualiza os horários com base no dia da semana
   useEffect(() => {
-    if (formData.data) {
-      const diaSemana = new Date(formData.data).getDay();
-      let horarios = [];
+    if (!formData.data || !formData.unidade) return;
 
-      if (diaSemana === 0) {
-        for (let h = 9; h <= 13; h++) {
-          horarios.push(`${h.toString().padStart(2, "0")}:00`);
-        }
-      } else {
-        for (let h = 9; h <= 20; h++) {
-          horarios.push(`${h.toString().padStart(2, "0")}:00`);
-        }
-      }
+    const dataSelecionada = new Date(formData.data + "T00:00:00");
+    const diaSemana = dataSelecionada.getDay();
+    let horarios = [];
 
-      setHorariosDisponiveis(horarios);
-
-      if (formData.horario !== "") {
-        setFormData((prev) => ({
-          ...prev,
-          horario: "",
-        }));
-      }
+    if (diaSemana >= 1 && diaSemana <= 5) {
+      horarios = gerarHorarios("09:00", "18:00", 60);
+    } else {
+      horarios = gerarHorarios("09:00", "14:00", 60);
     }
-  }, [formData.data]);
+
+    const hoje = new Date();
+    if (dataSelecionada.toDateString() === hoje.toDateString()) {
+      const horaAtual = hoje.getHours();
+      const minutoAtual = hoje.getMinutes();
+      horarios = horarios.filter((h) => {
+        const [hHora, hMin] = h.split(":").map(Number);
+        return hHora > horaAtual || (hHora === horaAtual && hMin > minutoAtual);
+      });
+    }
+
+    const agendamentosSalvos = JSON.parse(
+      localStorage.getItem("agendamentos") || "[]"
+    );
+    const ocupados = agendamentosSalvos
+      .filter(
+        (a) =>
+          a.data === formData.data &&
+          a.unidade === formData.unidade &&
+          a.horario !== ""
+      )
+      .map((a) => a.horario);
+
+    setHorariosDisponiveis(horarios);
+    setHorariosOcupados(ocupados);
+  }, [formData.data, formData.unidade]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    // Máscara telefone (formato brasileiro)
-    if (name === "telefone") {
-      let telefone = value.replace(/\D/g, "");
-
-      if (telefone.length > 11) {
-        telefone = telefone.slice(0, 11);
-      }
-
-      if (telefone.length > 10) {
-        // (99) 99999-9999
-        telefone = telefone.replace(/^(\d{2})(\d{5})(\d{4}).*/, "($1) $2-$3");
-      } else if (telefone.length > 5) {
-        // (99) 9999-9999
-        telefone = telefone.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, "($1) $2-$3");
-      } else if (telefone.length > 2) {
-        // (99) 99999
-        telefone = telefone.replace(/^(\d{2})(\d{0,5})/, "($1) $2");
-      } else if (telefone.length > 0) {
-        telefone = telefone.replace(/^(\d{0,2})/, "($1");
-      }
-
-      setFormData((prev) => ({
-        ...prev,
-        [name]: telefone,
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Simples validação
-    if (Object.values(formData).some((v) => v.trim() === "")) {
-      alert("Preencha todos os campos!");
-      return;
-    }
-    // Salvar no localStorage e ir para confirmação
-    localStorage.setItem("agendamento", JSON.stringify(formData));
+    const agendamentos = JSON.parse(
+      localStorage.getItem("agendamentos") || "[]"
+    );
+    agendamentos.push(formData);
+    localStorage.setItem("agendamentos", JSON.stringify(agendamentos));
     navigate("/confirmacao");
   };
 
-  const handleCancel = () => {
-    navigate("/");
+  const handleCancelar = () => {
+    setFormData({
+      nome: "",
+      sobrenome: "",
+      email: "",
+      telefone: "",
+      data: "",
+      horario: "",
+      unidade: "1",
+    });
   };
 
-  // Data mínima para hoje no formato yyyy-mm-dd
-  const dataMinima = new Date().toISOString().split("T")[0];
-
   return (
-    <div className={styles.paginaAgendamento}>
-      <h1 className={styles.titulo}>Agendamento</h1>
-
-      <div className={styles.containerForm}>
-        <div className={styles.topBox}>
-          <h2>Preencha seus dados</h2>
-          <p>Escolha a data e horário desejado para seu atendimento</p>
-        </div>
-
+    <div className={styles.wrapper}>
+      <div className={styles.leftPane}>
+        <h2>Preencha seus dados</h2>
+        <p>Escolha a data, horário e unidade desejada para o atendimento</p>
+      </div>
+      <div className={styles.rightPane}>
         <form onSubmit={handleSubmit}>
-          <label>Nome:</label>
+          <h2>Agendamento</h2>
           <input
             type="text"
             name="nome"
             value={formData.nome}
             onChange={handleChange}
+            placeholder="Nome"
             required
           />
-
-          <label>Sobrenome:</label>
           <input
             type="text"
             name="sobrenome"
             value={formData.sobrenome}
             onChange={handleChange}
+            placeholder="Sobrenome"
             required
           />
-
-          <label>Email:</label>
           <input
             type="email"
             name="email"
             value={formData.email}
             onChange={handleChange}
+            placeholder="Email"
             required
           />
-
-          <label>Telefone:</label>
           <input
-            type="text"
+            type="tel"
             name="telefone"
-            maxLength={15}
             value={formData.telefone}
             onChange={handleChange}
+            placeholder="Telefone"
             required
-            placeholder="(99) 99999-9999"
           />
-
-          <label>Data:</label>
           <input
             type="date"
             name="data"
             value={formData.data}
             onChange={handleChange}
             required
-            min={dataMinima}
           />
 
-          <label>Horário:</label>
           <select
             name="horario"
             value={formData.horario}
@@ -164,26 +157,54 @@ function AgendamentoPage() {
             required
           >
             <option value="">Selecione um horário</option>
-            {horariosDisponiveis.map((hora) => (
-              <option key={hora} value={hora}>
-                {hora}
+            {horariosDisponiveis.map((horario) => (
+              <option
+                key={horario}
+                value={horario}
+                disabled={horariosOcupados.includes(horario)}
+              >
+                {horario}{" "}
+                {horariosOcupados.includes(horario) ? "(Indisponível)" : ""}
               </option>
             ))}
           </select>
 
+          <div className={styles.unidade}>
+            <label>
+              <input
+                type="radio"
+                name="unidade"
+                value="1"
+                checked={formData.unidade === "1"}
+                onChange={handleChange}
+              />
+              Unidade 1
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="unidade"
+                value="2"
+                checked={formData.unidade === "2"}
+                onChange={handleChange}
+              />
+              Unidade 2
+            </label>
+          </div>
+
           <div className={styles.botaoContainer}>
-            <button type="button" onClick={handleCancel}>
-              Cancelar
-            </button>
             <button type="submit">
-              Continuar
+              Agendar
               <span className="material-symbols-outlined">arrow_forward</span>
+            </button>
+            <button type="button" onClick={() => navigate("/")}>
+              Cancelar
             </button>
           </div>
         </form>
       </div>
     </div>
   );
-}
+};
 
 export default Agendamento;
