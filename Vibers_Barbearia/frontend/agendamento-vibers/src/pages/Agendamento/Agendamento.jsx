@@ -89,18 +89,6 @@ const Agendamento = () => {
     navigate("/confirmacao");
   };
 
-  const handleCancelar = () => {
-    setFormData({
-      nome: "",
-      sobrenome: "",
-      email: "",
-      telefone: "",
-      data: "",
-      horario: "",
-      unidade: "1",
-    });
-  };
-
   return (
     <div className={styles.wrapper}>
       <div className={styles.leftPane}>
@@ -141,6 +129,8 @@ const Agendamento = () => {
             onChange={handleChange}
             placeholder="Telefone"
             required
+            pattern="\d{10,11}"
+            title="Digite o telefone com 10 ou 11 dígitos numéricos"
           />
           <input
             type="date"
@@ -163,8 +153,7 @@ const Agendamento = () => {
                 value={horario}
                 disabled={horariosOcupados.includes(horario)}
               >
-                {horario}{" "}
-                {horariosOcupados.includes(horario) ? "(Indisponível)" : ""}
+                {horario} {horariosOcupados.includes(horario) ? "(Indisponível)" : ""}
               </option>
             ))}
           </select>
