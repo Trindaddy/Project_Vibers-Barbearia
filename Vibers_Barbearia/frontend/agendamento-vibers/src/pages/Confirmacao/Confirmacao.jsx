@@ -1,12 +1,29 @@
 import styles from './Confirmacao.module.css';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function Confirmacao() {
   const navigate = useNavigate();
+  const { state } = useLocation();
 
   const handleNovoAgendamento = () => {
     navigate("/agendamento");
   };
+
+  function formatarData(dataISO) {
+    const dataObj = new Date(dataISO);
+    if (isNaN(dataObj)) return "data inválida";
+
+    const dia = String(dataObj.getDate()).padStart(2, "0");
+    const mes = String(dataObj.getMonth() + 1).padStart(2, "0");
+    const ano = String(dataObj.getFullYear()).slice(-2);
+
+    return `${dia}-${mes}-${ano}`;
+  }
+
+  const rawData = state?.data || "não informado";
+  const data = rawData !== "não informado" ? formatarData(rawData) : rawData;
+  const horario = state?.horario || "não informado";
+  const unidade = state?.unidade || "não informada";
 
   return (
     <div className={styles.paginaConfirmacao}>
@@ -25,15 +42,15 @@ function Confirmacao() {
         <div className={styles.resumo}>
           <p>
             <span className="material-symbols-outlined">calendar_month</span>{" "}
-            <strong>Data:</strong> 
+            <strong>Data:</strong> {data}
           </p>
           <p>
             <span className="material-symbols-outlined">schedule</span>{" "}
-            <strong>Horário:</strong> 
+            <strong>Horário:</strong> {horario}
           </p>
           <p>
             <span className="material-symbols-outlined">location_on</span>{" "}
-            <strong>Unidade:</strong> 
+            <strong>Unidade:</strong> {unidade}
           </p>
         </div>
       </div>
