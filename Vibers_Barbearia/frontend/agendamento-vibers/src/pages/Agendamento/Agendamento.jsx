@@ -21,8 +21,19 @@ function gerarHorarios(inicio, fim, intervaloMin) {
   return horarios;
 }
 
+function formatarTelefone(valor) {
+  const numeros = valor.replace(/\D/g, "").slice(0, 11);
+  if (numeros.length <= 10) {
+    return numeros.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3").trim();
+  } else {
+    return numeros.replace(/(\d{2})(\d{5})(\d{0,4})/, "($1) $2-$3").trim();
+  }
+}
+
 const Agendamento = () => {
   const navigate = useNavigate();
+  const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
+
   const [formData, setFormData] = useState({
     nome: "",
     sobrenome: "",
@@ -35,6 +46,7 @@ const Agendamento = () => {
 
   const [horariosDisponiveis, setHorariosDisponiveis] = useState([]);
   const [horariosOcupados, setHorariosOcupados] = useState([]);
+  const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     if (!formData.data || !formData.unidade) return;
@@ -44,9 +56,9 @@ const Agendamento = () => {
     let horarios = [];
 
     if (diaSemana >= 1 && diaSemana <= 5) {
-      horarios = gerarHorarios("09:00", "18:00", 60);
+      horarios = gerarHorarios("08:00", "20:00", 15);
     } else {
-      horarios = gerarHorarios("09:00", "14:00", 60);
+      horarios = gerarHorarios("09:00", "13:00", 15);
     }
 
     const hoje = new Date();
@@ -76,21 +88,85 @@ const Agendamento = () => {
   }, [formData.data, formData.unidade]);
 
   const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "telefone" ? formatarTelefone(value) : value,
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const agendamentos = JSON.parse(
-      localStorage.getItem("agendamentos") || "[]"
-    );
-    agendamentos.push(formData);
-    localStorage.setItem("agendamentos", JSON.stringify(agendamentos));
-    navigate("/confirmacao");
+    setMostrarConfirmacao(true);
   };
+
+  const enviarAgendamento = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/agendar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData), // ou como você estiver passando os dados
+      });
+
+      if (response.ok) {
+        navigate("/confirmacao", {
+          state: {
+            data: formData.data,
+            horario: formData.horario,
+            unidade:
+              formData.unidade === "1" ? "Unidade 1 - EQNP" : "Unidade 2 - QNP",
+          },
+        });
+      } else {
+        alert("Erro ao agendar. Tente novamente.");
+      }
+    } catch (error) {
+      console.error("Erro na conexão com o servidor:", error);
+      alert("Erro ao conectar com o servidor.");
+    }
+  };
+
+  const unidadeTexto =
+    formData.unidade === "1" ? "Unidade 1 - EQNP" : "Unidade 2 - QNP";
 
   return (
     <div className={styles.wrapper}>
+      {mostrarConfirmacao && (
+        <div className={styles.modal}>
+          <div className={styles.modalContent}>
+            <h3>Confirmar Agendamento</h3>
+            <p>
+              <strong>Nome:</strong> {formData.nome} {formData.sobrenome}
+            </p>
+            <p>
+              <strong>Email:</strong> {formData.email}
+            </p>
+            <p>
+              <strong>Telefone:</strong> {formData.telefone}
+            </p>
+            <p>
+              <strong>Data:</strong> {formData.data}
+            </p>
+            <p>
+              <strong>Horário:</strong> {formData.horario}
+            </p>
+            <p>
+              <strong>Unidade:</strong> {unidadeTexto}
+            </p>
+
+            <div className={styles.modalButtons}>
+              <button onClick={enviarAgendamento}>Confirmar</button>
+              <button onClick={() => setMostrarConfirmacao(false)}>
+                Editar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className={styles.leftPane}>
         <h2>Preencha seus dados</h2>
         <p>Escolha a data, horário e unidade desejada para o atendimento</p>
@@ -129,14 +205,13 @@ const Agendamento = () => {
             onChange={handleChange}
             placeholder="Telefone"
             required
-            pattern="\d{10,11}"
-            title="Digite o telefone com 10 ou 11 dígitos numéricos"
           />
           <input
             type="date"
             name="data"
             value={formData.data}
             onChange={handleChange}
+            min={today}
             required
           />
 
@@ -153,7 +228,8 @@ const Agendamento = () => {
                 value={horario}
                 disabled={horariosOcupados.includes(horario)}
               >
-                {horario} {horariosOcupados.includes(horario) ? "(Indisponível)" : ""}
+                {horario}{" "}
+                {horariosOcupados.includes(horario) ? "(Indisponível)" : ""}
               </option>
             ))}
           </select>
@@ -167,7 +243,7 @@ const Agendamento = () => {
                 checked={formData.unidade === "1"}
                 onChange={handleChange}
               />
-              Unidade 1
+              Unidade 1 - EQNP
             </label>
             <label>
               <input
@@ -177,15 +253,12 @@ const Agendamento = () => {
                 checked={formData.unidade === "2"}
                 onChange={handleChange}
               />
-              Unidade 2
+              Unidade 2 - QNP
             </label>
           </div>
 
           <div className={styles.botaoContainer}>
-            <button type="submit">
-              Agendar
-              <span className="material-symbols-outlined">arrow_forward</span>
-            </button>
+            <button type="submit">Agendar</button>
             <button type="button" onClick={() => navigate("/")}>
               Cancelar
             </button>
