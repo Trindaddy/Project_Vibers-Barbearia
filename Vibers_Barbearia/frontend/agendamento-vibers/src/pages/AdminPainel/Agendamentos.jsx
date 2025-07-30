@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import styles from './Agendamentos.module.css';
-import { FaTrashAlt } from 'react-icons/fa';
+import React, { useEffect, useState } from "react";
+import styles from "./Agendamentos.module.css";
+import { FaTrashAlt } from "react-icons/fa";
 
 const Agendamentos = () => {
   const [agendamentos, setAgendamentos] = useState([]);
@@ -8,32 +8,32 @@ const Agendamentos = () => {
 
   // Carregar agendamentos do backend
   useEffect(() => {
-    fetch('http://localhost:5000/api/agendamentos')
+    fetch("http://localhost:5000/agendamentos")
       .then((res) => res.json())
       .then((data) => {
         setAgendamentos(data);
         setLoading(false);
       })
       .catch((err) => {
-        console.error('Erro ao buscar agendamentos:', err);
+        console.error("Erro ao buscar agendamentos:", err);
         setLoading(false);
       });
   }, []);
 
   // Deletar agendamento
   const handleDelete = (id) => {
-    if (window.confirm('Deseja realmente excluir este agendamento?')) {
-      fetch(`http://localhost:5000/api/agendamentos/${id}`, {
-        method: 'DELETE',
+    if (window.confirm("Deseja realmente excluir este agendamento?")) {
+      fetch(`http://localhost:5000/agendamentos/${id}`, {
+        method: "DELETE",
       })
         .then((res) => {
           if (res.ok) {
             setAgendamentos(agendamentos.filter((item) => item.id !== id));
           } else {
-            console.error('Erro ao deletar');
+            console.error("Erro ao deletar");
           }
         })
-        .catch((err) => console.error('Erro ao excluir agendamento:', err));
+        .catch((err) => console.error("Erro ao excluir agendamento:", err));
     }
   };
 
@@ -60,14 +60,19 @@ const Agendamentos = () => {
           <tbody>
             {agendamentos.map((item) => (
               <tr key={item.id}>
-                <td>{item.nome} {item.sobrenome}</td>
+                <td>
+                  {item.nome} {item.sobrenome}
+                </td>
                 <td>{item.email}</td>
                 <td>{item.telefone}</td>
                 <td>{item.data}</td>
                 <td>{item.horario}</td>
                 <td>{item.unidade}</td>
                 <td>
-                  <button onClick={() => handleDelete(item.id)} className={styles.botaoExcluir}>
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className={styles.botaoExcluir}
+                  >
                     <FaTrashAlt />
                   </button>
                 </td>
