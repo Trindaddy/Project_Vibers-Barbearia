@@ -1,21 +1,31 @@
 from flask import Blueprint, request, jsonify
-from database import get_db_connection
+from database import get_db_connection  
 
 agendamento_bp = Blueprint('agendamentos', __name__)
 
 @agendamento_bp.route("/agendamentos", methods=["GET"])
 def listar_agendamentos():
-    try:
-        db = get_db_connection()
-        cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM agendamentos ORDER BY data DESC, horario ASC")
-        resultados = cursor.fetchall()
-        cursor.close()
-        db.close()
-        return jsonify(resultados), 200
-    except Exception as e:
-        print("Erro ao buscar agendamentos:", e)
-        return jsonify({"error": "Erro ao buscar agendamentos"}), 500
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM agendamentos")
+    rows = cursor.fetchall()
+    conn.close()
+
+    agendamentos = [
+        {
+            "id": row["id"],
+            "nome": row["nome"],
+            "sobrenome": row["sobrenome"],
+            "email": row["email"],
+            "telefone": row["telefone"],
+            "data": row["data"],
+            "horario": row["horario"],
+            "unidade": row["unidade"]
+        }
+        for row in rows
+    ]
+
+    return jsonify(agendamentos)
 
 @agendamento_bp.route("/agendamentos", methods=["POST"])
 def criar_agendamento():

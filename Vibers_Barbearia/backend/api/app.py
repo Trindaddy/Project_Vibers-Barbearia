@@ -1,9 +1,9 @@
 from flask import Flask
 from flask_cors import CORS
-from routes.agendamentos import agendamento_bp
+from agendamentos import agendamento_bp  
 
 app = Flask(__name__)
-CORS(app)  # Permite requisições do frontend
+CORS(app)
 
 # Registrar os blueprints
 app.register_blueprint(agendamento_bp)
