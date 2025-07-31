@@ -1,9 +1,8 @@
 import mysql.connector
 import os
 from dotenv import load_dotenv
-from pathlib import Path
-load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 
+load_dotenv()
 
 def get_db_connection():
     return mysql.connector.connect(
@@ -11,5 +10,5 @@ def get_db_connection():
         user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
         database=os.getenv("DB_NAME"),
-        charset='utf8mb4'
+        charset="utf8mb4"
     )
