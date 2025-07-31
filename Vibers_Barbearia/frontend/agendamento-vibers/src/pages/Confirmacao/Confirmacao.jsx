@@ -42,7 +42,7 @@ function Confirmacao() {
         <div className={styles.resumo}>
           <p>
             <span className="material-symbols-outlined">calendar_month</span>{" "}
-            <strong>Data:</strong> {data}
+            <strong>Data:</strong> {formatarData(data)}
           </p>
           <p>
             <span className="material-symbols-outlined">schedule</span>{" "}
