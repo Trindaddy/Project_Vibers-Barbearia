@@ -2,25 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Agendamento.module.css";
 
-function gerarHorarios(inicio, fim, intervaloMin) {
-  const horarios = [];
-  let [hora, minuto] = inicio.split(":").map(Number);
-  const [fimHora, fimMinuto] = fim.split(":").map(Number);
-
-  while (hora < fimHora || (hora === fimHora && minuto <= fimMinuto)) {
-    const horaStr = String(hora).padStart(2, "0");
-    const minutoStr = String(minuto).padStart(2, "0");
-    horarios.push(`${horaStr}:${minutoStr}`);
-    minuto += intervaloMin;
-    if (minuto >= 60) {
-      minuto -= 60;
-      hora += 1;
-    }
-  }
-
-  return horarios;
-}
-
 function formatarTelefone(valor) {
   const numeros = valor.replace(/\D/g, "").slice(0, 11);
   if (numeros.length <= 10) {
@@ -30,10 +11,16 @@ function formatarTelefone(valor) {
   }
 }
 
+const formatarData = (dataStr) => {
+  if (!dataStr) return "";
+  const partes = dataStr.split("-");
+  // dataStr está no formato "yyyy-mm-dd"
+  return `${partes[2]}-${partes[1]}-${partes[0].slice(2)}`; // dd-mm-yy
+};
+
 const Agendamento = () => {
   const navigate = useNavigate();
   const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
-
   const [formData, setFormData] = useState({
     nome: "",
     sobrenome: "",
@@ -48,48 +35,50 @@ const Agendamento = () => {
   const [horariosOcupados, setHorariosOcupados] = useState([]);
   const today = new Date().toISOString().split("T")[0];
 
+  const nenhumHorarioDisponivel =
+    horariosDisponiveis.length === 0 ||
+    horariosDisponiveis.every((h) => horariosOcupados.includes(h));
+
   useEffect(() => {
     if (!formData.data || !formData.unidade) return;
 
-    const dataSelecionada = new Date(formData.data + "T00:00:00");
-    const diaSemana = dataSelecionada.getDay();
-    let horarios = [];
+    fetch(
+      `http://localhost:5000/horarios-disponiveis/${formData.data}/${formData.unidade}`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        const todos = data.todos || [];
+        const ocupados = data.ocupados || [];
 
-    if (diaSemana >= 1 && diaSemana <= 5) {
-      horarios = gerarHorarios("08:00", "20:00", 15);
-    } else {
-      horarios = gerarHorarios("09:00", "13:00", 15);
-    }
+        // Ajusta para garantir que horários passados não apareçam (redundante, mas seguro)
+        const agora = new Date();
+        const hojeStr = agora.toISOString().split("T")[0];
 
-    const hoje = new Date();
-    if (dataSelecionada.toDateString() === hoje.toDateString()) {
-      const horaAtual = hoje.getHours();
-      const minutoAtual = hoje.getMinutes();
-      horarios = horarios.filter((h) => {
-        const [hHora, hMin] = h.split(":").map(Number);
-        return hHora > horaAtual || (hHora === horaAtual && hMin > minutoAtual);
+        const filtrados = todos.filter((horario) => {
+          if (formData.data === hojeStr) {
+            const [h, m] = horario.split(":").map(Number);
+            const horarioData = new Date();
+            horarioData.setHours(h, m, 0, 0);
+            return horarioData > agora;
+          }
+          return true;
+        });
+
+        setHorariosDisponiveis(filtrados);
+        setHorariosOcupados(ocupados);
+
+        // Limpa horário selecionado se estiver indisponível
+        if (ocupados.includes(formData.horario)) {
+          setFormData((prev) => ({ ...prev, horario: "" }));
+        }
+      })
+      .catch((error) => {
+        console.error("Erro ao buscar horários disponíveis:", error);
       });
-    }
-
-    const agendamentosSalvos = JSON.parse(
-      localStorage.getItem("agendamentos") || "[]"
-    );
-    const ocupados = agendamentosSalvos
-      .filter(
-        (a) =>
-          a.data === formData.data &&
-          a.unidade === formData.unidade &&
-          a.horario !== ""
-      )
-      .map((a) => a.horario);
-
-    setHorariosDisponiveis(horarios);
-    setHorariosOcupados(ocupados);
   }, [formData.data, formData.unidade]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((prev) => ({
       ...prev,
       [name]: name === "telefone" ? formatarTelefone(value) : value,
@@ -105,10 +94,8 @@ const Agendamento = () => {
     try {
       const response = await fetch("http://localhost:5000/agendamentos", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData), // ou como você estiver passando os dados
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
@@ -120,6 +107,22 @@ const Agendamento = () => {
               formData.unidade === "1" ? "Unidade 1 - EQNP" : "Unidade 2 - QNP",
           },
         });
+      } else if (response.status === 409) {
+        alert(
+          "Este horário já foi reservado. Por favor, escolha outro horário."
+        );
+        setMostrarConfirmacao(false);
+
+        // Atualiza os horários disponíveis após conflito
+        fetch(
+          `http://localhost:5000/horarios-disponiveis/${formData.data}/${formData.unidade}`
+        )
+          .then((res) => res.json())
+          .then((data) => {
+            setHorariosDisponiveis(data.todos || []);
+            setHorariosOcupados(data.ocupados || []);
+            setFormData((prev) => ({ ...prev, horario: "" }));
+          });
       } else {
         alert("Erro ao agendar. Tente novamente.");
       }
@@ -148,7 +151,7 @@ const Agendamento = () => {
               <strong>Telefone:</strong> {formData.telefone}
             </p>
             <p>
-              <strong>Data:</strong> {formData.data}
+              <strong>Data:</strong> {formatarData(formData.data)}
             </p>
             <p>
               <strong>Horário:</strong> {formData.horario}
@@ -171,9 +174,11 @@ const Agendamento = () => {
         <h2>Preencha seus dados</h2>
         <p>Escolha a data, horário e unidade desejada para o atendimento</p>
       </div>
+
       <div className={styles.rightPane}>
         <form onSubmit={handleSubmit}>
           <h2>Agendamento</h2>
+
           <input
             type="text"
             name="nome"
@@ -222,16 +227,20 @@ const Agendamento = () => {
             required
           >
             <option value="">Selecione um horário</option>
-            {horariosDisponiveis.map((horario) => (
-              <option
-                key={horario}
-                value={horario}
-                disabled={horariosOcupados.includes(horario)}
-              >
-                {horario}{" "}
-                {horariosOcupados.includes(horario) ? "(Indisponível)" : ""}
-              </option>
-            ))}
+            {horariosDisponiveis.length === 0 ? (
+              <option disabled>Nenhum horário disponível</option>
+            ) : (
+              horariosDisponiveis.map((horario) => (
+                <option
+                  key={horario}
+                  value={horario}
+                  disabled={horariosOcupados.includes(horario)}
+                >
+                  {horario}{" "}
+                  {horariosOcupados.includes(horario) ? "(Indisponível)" : ""}
+                </option>
+              ))
+            )}
           </select>
 
           <div className={styles.unidade}>
@@ -258,7 +267,12 @@ const Agendamento = () => {
           </div>
 
           <div className={styles.botaoContainer}>
-            <button type="submit">Agendar</button>
+            <button
+              type="submit"
+              disabled={nenhumHorarioDisponivel || !formData.horario}
+            >
+              Agendar
+            </button>
             <button type="button" onClick={() => navigate("/")}>
               Cancelar
             </button>
