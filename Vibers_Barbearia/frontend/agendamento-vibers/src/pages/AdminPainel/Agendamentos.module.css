@@ -23,6 +23,12 @@ h2 {
   text-align: center;
 }
 
+.botoes {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
 .botaoExcluir {
   background-color: #e74c3c;
   border: none;
@@ -33,4 +39,51 @@ h2 {
 }
 .botaoExcluir:hover {
   background-color: #c0392b;
+}
+
+.status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.statusAtivo {
+  color: green;
+  font-weight: bold;
+}
+
+.statusInativo {
+  color: gray;
+  font-style: italic;
+}
+
+.pendente {
+  background-color: #f0ad4e;
+  color: white;
+}
+
+.confirmado {
+  background-color: #5cb85c;
+  color: white;
+}
+
+.cancelado {
+  background-color: #d9534f;
+  color: white;
+}
+
+.botaoStatus {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: #2c3e50;
+}
+
+.botaoExcluir {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: red;
 }
