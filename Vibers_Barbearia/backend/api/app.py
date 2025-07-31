@@ -3,9 +3,8 @@ from flask_cors import CORS
 from agendamentos import agendamento_bp  
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["http://localhost:5173"])
 
-# Registrar os blueprints
 app.register_blueprint(agendamento_bp)
 
 if __name__ == "__main__":
