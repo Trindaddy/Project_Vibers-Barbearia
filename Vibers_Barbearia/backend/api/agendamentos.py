@@ -5,6 +5,9 @@ from database import get_db_connection
 agendamento_bp = Blueprint('agendamentos', __name__)
 
 def gerar_horarios(inicio_str, fim_str, intervalo_min=15):
+    """
+    Gera uma lista de horários no formato HH:MM dentro de um intervalo.
+    """
     horarios = []
     hora, minuto = map(int, inicio_str.split(":"))
     fim_hora, fim_minuto = map(int, fim_str.split(":"))
@@ -20,6 +23,9 @@ def gerar_horarios(inicio_str, fim_str, intervalo_min=15):
 
 @agendamento_bp.route("/horarios-disponiveis/<data>/<int:unidade>", methods=["GET"])
 def horarios_disponiveis(data, unidade):
+    """
+    Retorna todos os horários disponíveis para uma data e unidade específica.
+    """
     try:
         data_obj = datetime.strptime(data, "%Y-%m-%d")
         dia_semana = data_obj.weekday()  # 0=Segunda, ..., 6=Domingo
@@ -63,6 +69,9 @@ def horarios_disponiveis(data, unidade):
 
 @agendamento_bp.route("/agendamentos", methods=["GET"])
 def listar_agendamentos():
+    """
+    Lista todos os agendamentos existentes.
+    """
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -71,7 +80,11 @@ def listar_agendamentos():
         cursor.close()
         conn.close()
 
+        # CORREÇÃO: Converte a data e a hora para strings com o formato correto
         for row in rows:
+            if isinstance(row.get("data"), datetime):
+                row["data"] = row["data"].strftime("%Y-%m-%d")
+            
             if isinstance(row.get("horario"), timedelta):
                 horario_td = row["horario"]
                 horas = int(horario_td.total_seconds() // 3600)
@@ -85,6 +98,9 @@ def listar_agendamentos():
 
 @agendamento_bp.route("/agendamentos", methods=["POST"])
 def criar_agendamento():
+    """
+    Cria um novo agendamento.
+    """
     data = request.get_json()
 
     required_fields = ["nome", "sobrenome", "email", "telefone", "data", "horario", "unidade"]
@@ -125,6 +141,9 @@ def criar_agendamento():
 
 @agendamento_bp.route("/agendamentos/<int:id>", methods=["DELETE"])
 def deletar_agendamento(id):
+    """
+    Deleta um agendamento com base no ID.
+    """
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -139,6 +158,9 @@ def deletar_agendamento(id):
 
 @agendamento_bp.route("/agendamentos/<int:id>/status", methods=["PATCH"])
 def atualizar_status(id):
+    """
+    Atualiza o status de um agendamento.
+    """
     novo_status = request.json.get("status")
     if novo_status not in ["pendente", "confirmado", "concluido", "cancelado"]:
         return jsonify({"error": "Status inválido"}), 400
