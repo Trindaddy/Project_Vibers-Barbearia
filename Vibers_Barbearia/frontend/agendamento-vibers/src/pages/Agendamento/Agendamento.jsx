@@ -1,7 +1,9 @@
+// Agendamento/Agendamento.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./Agendamento.module.css";
 
+// Formata um número de telefone para o padrão (XX) XXXX-XXXX ou (XX) XXXXX-XXXX
 function formatarTelefone(valor) {
   const numeros = valor.replace(/\D/g, "").slice(0, 11);
   if (numeros.length <= 10) {
@@ -11,16 +13,17 @@ function formatarTelefone(valor) {
   }
 }
 
+// Formata a data de 'yyyy-mm-dd' para 'dd-mm-yy'
 const formatarData = (dataStr) => {
   if (!dataStr) return "";
   const partes = dataStr.split("-");
-  // dataStr está no formato "yyyy-mm-dd"
-  return `${partes[2]}-${partes[1]}-${partes[0].slice(2)}`; // dd-mm-yy
+  return `${partes[2]}-${partes[1]}-${partes[0].slice(2)}`;
 };
 
 const Agendamento = () => {
   const navigate = useNavigate();
   const [mostrarConfirmacao, setMostrarConfirmacao] = useState(false);
+  const [mensagemErro, setMensagemErro] = useState("");
   const [formData, setFormData] = useState({
     nome: "",
     sobrenome: "",
@@ -42,15 +45,15 @@ const Agendamento = () => {
   useEffect(() => {
     if (!formData.data || !formData.unidade) return;
 
+    // CORREÇÃO: Adicionado o prefixo '/api' para a chamada
     fetch(
-      `http://localhost:5000/horarios-disponiveis/${formData.data}/${formData.unidade}`
+      `http://localhost:5000/api/horarios-disponiveis/${formData.data}/${formData.unidade}`
     )
       .then((res) => res.json())
       .then((data) => {
         const todos = data.todos || [];
         const ocupados = data.ocupados || [];
 
-        // Ajusta para garantir que horários passados não apareçam (redundante, mas seguro)
         const agora = new Date();
         const hojeStr = agora.toISOString().split("T")[0];
 
@@ -67,7 +70,6 @@ const Agendamento = () => {
         setHorariosDisponiveis(filtrados);
         setHorariosOcupados(ocupados);
 
-        // Limpa horário selecionado se estiver indisponível
         if (ocupados.includes(formData.horario)) {
           setFormData((prev) => ({ ...prev, horario: "" }));
         }
@@ -92,7 +94,8 @@ const Agendamento = () => {
 
   const enviarAgendamento = async () => {
     try {
-      const response = await fetch("http://localhost:5000/agendamentos", {
+      // CORREÇÃO: Adicionado o prefixo '/api' para a chamada
+      const response = await fetch("http://localhost:5000/api/agendamentos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -108,14 +111,12 @@ const Agendamento = () => {
           },
         });
       } else if (response.status === 409) {
-        alert(
-          "Este horário já foi reservado. Por favor, escolha outro horário."
-        );
+        setMensagemErro("Este horário já foi reservado. Por favor, escolha outro horário.");
         setMostrarConfirmacao(false);
 
-        // Atualiza os horários disponíveis após conflito
+        // CORREÇÃO: Adicionado o prefixo '/api' para a chamada
         fetch(
-          `http://localhost:5000/horarios-disponiveis/${formData.data}/${formData.unidade}`
+          `http://localhost:5000/api/horarios-disponiveis/${formData.data}/${formData.unidade}`
         )
           .then((res) => res.json())
           .then((data) => {
@@ -124,11 +125,11 @@ const Agendamento = () => {
             setFormData((prev) => ({ ...prev, horario: "" }));
           });
       } else {
-        alert("Erro ao agendar. Tente novamente.");
+        setMensagemErro("Erro ao agendar. Tente novamente.");
       }
     } catch (error) {
       console.error("Erro na conexão com o servidor:", error);
-      alert("Erro ao conectar com o servidor.");
+      setMensagemErro("Erro ao conectar com o servidor.");
     }
   };
 
@@ -167,6 +168,17 @@ const Agendamento = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {mensagemErro && (
+        <div className={styles.modal}>
+            <div className={styles.modalContent}>
+              <p>{mensagemErro}</p>
+              <div className={styles.modalButtons}>
+                <button onClick={() => setMensagemErro("")}>Ok</button>
+              </div>
+            </div>
         </div>
       )}
 
