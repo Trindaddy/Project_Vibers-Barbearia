@@ -58,19 +58,25 @@ h2 {
 }
 
 .pendente {
-  background-color: #f0ad4e;
-  color: white;
+  background-color: #fff3cd;
+  color: #856404;
 }
 
 .confirmado {
-  background-color: #5cb85c;
-  color: white;
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.concluido {
+  background-color: #cce5ff;
+  color: #004085;
 }
 
 .cancelado {
-  background-color: #d9534f;
-  color: white;
+  background-color: #f8d7da;
+  color: #721c24;
 }
+
 
 .botaoStatus {
   background: none;
