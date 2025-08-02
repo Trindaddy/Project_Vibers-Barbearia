@@ -18,14 +18,14 @@ const AdminPainel = () => {
           <button className={styles.button}>Ver Agendamentos</button>
         </div>
 
-        <div className={styles.card}>
+        <div className={styles.card} onClick={() => navigate('/admin/logos')}>
           <FaImage className={styles.icon} />
           <h3>Gerenciar Logos</h3>
           <p>Atualize e gerencie as imagens da marca.</p>
           <button className={styles.button}>Acessar</button>
         </div>
 
-        <div className={styles.card}>
+        <div className={styles.card} onClick={() => navigate('/admin/configuracoes')}>
           <FaCog className={styles.icon} />
           <h3>Configurações</h3>
           <p>Personalize opções e preferências.</p>
