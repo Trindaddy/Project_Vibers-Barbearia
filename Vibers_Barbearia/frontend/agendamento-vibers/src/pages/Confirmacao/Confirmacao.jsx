@@ -5,25 +5,26 @@ function Confirmacao() {
   const navigate = useNavigate();
   const { state } = useLocation();
 
+  // Função de formatação mais segura e simples
+  function formatarData(dataString) {
+    // Se não houver data ou ela não for uma string, retorna vazio
+    if (!dataString || typeof dataString !== 'string') return "";
+
+    // Divide a string "AAAA-MM-DD" em um array ["AAAA", "MM", "DD"]
+    const partes = dataString.split("-");
+
+    // Retorna a data no formato "DD/MM/AAAA"
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  }
+
+  // Pega os dados do state, com valores padrão caso o usuário chegue aqui por engano
+  const dataFormatada = formatarData(state?.data);
+  const horario = state?.horario || "não informado";
+  const unidade = state?.unidade || "não informada";
+
   const handleNovoAgendamento = () => {
     navigate("/agendamento");
   };
-
-  function formatarData(dataISO) {
-    const dataObj = new Date(dataISO);
-    if (isNaN(dataObj)) return "data inválida";
-
-    const dia = String(dataObj.getDate()).padStart(2, "0");
-    const mes = String(dataObj.getMonth() + 1).padStart(2, "0");
-    const ano = String(dataObj.getFullYear()).slice(-2);
-
-    return `${dia}-${mes}-${ano}`;
-  }
-
-  const rawData = state?.data || "não informado";
-  const data = rawData !== "não informado" ? formatarData(rawData) : rawData;
-  const horario = state?.horario || "não informado";
-  const unidade = state?.unidade || "não informada";
 
   return (
     <div className={styles.paginaConfirmacao}>
@@ -32,6 +33,7 @@ function Confirmacao() {
       <div className={styles.mensagemCentral}>
         <h1>💈 Nos vemos em breve!</h1>
         <div className={styles.checkIcon}>
+          {/* Recomendo usar ícones de uma biblioteca como react-icons para consistência */}
           <span className="material-symbols-outlined">check_circle</span>
         </div>
         <p className={styles.descricao}>
@@ -42,7 +44,8 @@ function Confirmacao() {
         <div className={styles.resumo}>
           <p>
             <span className="material-symbols-outlined">calendar_month</span>{" "}
-            <strong>Data:</strong> {formatarData(data)}
+            {/* A variável já contém a data formatada */}
+            <strong>Data:</strong> {dataFormatada}
           </p>
           <p>
             <span className="material-symbols-outlined">schedule</span>{" "}
