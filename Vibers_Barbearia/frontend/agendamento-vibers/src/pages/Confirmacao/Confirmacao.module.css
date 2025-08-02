@@ -3,13 +3,14 @@
 
 .paginaConfirmacao {
   background-color: #FAE6B1;
-  height: 100vh;
+  min-height: 100vh;
   font-family: 'Poppins', sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 2rem 1rem;
+  /* --- ALTERAÇÃO: Padding lateral removido para permitir que o rodapé ocupe 100% da largura --- */
+  padding: 2rem 0 0 0; /* padding-bottom será controlado pelo container .botoes */
 }
 
 .paginaConfirmacao h3 {
@@ -22,6 +23,9 @@
 .mensagemCentral {
   text-align: center;
   margin-top: -10rem;
+  width: 100%; /* Garante que o conteúdo central possa usar a largura total */
+  padding: 0 1rem; /* Adiciona o padding lateral que foi removido do pai */
+  box-sizing: border-box; /* Garante que o padding não aumente a largura total */
 }
 
 .mensagemCentral h1 {
@@ -49,7 +53,8 @@
   color: #555;
   margin-bottom: 2rem;
   max-width: 90%;
-  margin-left: 2.5rem;
+  margin-left: auto; /* Centraliza o texto */
+  margin-right: auto; /* Centraliza o texto */
 }
 
 .resumo {
@@ -57,10 +62,10 @@
   font-weight: 500;
   color: #000;
   text-align: left;
-  display: flex;
+  display: inline-flex; /* Altera para inline-flex para se ajustar ao conteúdo */
   flex-direction: column;
   margin-top: 1rem;
-  margin-left: 11rem;
+  /* margin-left foi removido para melhor alinhamento central */
 }
 
 .resumo p {
@@ -74,13 +79,15 @@
   font-size: 22px;
 }
 
+/* --- ALTERAÇÃO: O container dos botões agora tem largura total e padding interno --- */
 .botoes {
   width: 100%;
   display: flex;
   justify-content: center;
   gap: 1.5rem;
-  padding: 2.5rem 0;
+  padding: 2.5rem 1rem; /* Adiciona padding interno */
   background-color: white;
+  box-sizing: border-box; /* Garante que o padding não aumente a largura total */
 }
 
 .botoes button {
@@ -96,7 +103,7 @@
   align-items: center;
   gap: 0.5rem;
   transition: background-color 0.3s ease;
-  margin-bottom: 1rem;
+  /* margin-bottom: 1rem; removido para melhor controle pelo container pai */
 }
 
 .botoes button:hover {
