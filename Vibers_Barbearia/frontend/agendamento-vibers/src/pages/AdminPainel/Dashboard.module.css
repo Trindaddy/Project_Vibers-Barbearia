@@ -1,0 +1,39 @@
+/* AdminPainel/Dashboard.module.css */
+.dashboardContainer {
+    background-color: #1e1e1e;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    color: #fff;
+}
+
+.dashboardTitle {
+    color: #f2c12e;
+    text-align: left;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.cardContainer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.card {
+    background-color: #2a2a2a;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.card h3 {
+    font-size: 2rem;
+    color: #f2c12e;
+    margin: 0;
+}
+
+.card p {
+    margin: 0.25rem 0 0 0;
+    color: #ccc;
+}
