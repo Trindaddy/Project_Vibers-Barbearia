@@ -1,0 +1,203 @@
+/* AdminPainel/Configuracoes.module.css */
+.container {
+  background-color: #121212;
+  color: #e0e0e0;
+  height: 100vh; /* Define uma altura fixa para a página inteira */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Impede que a página inteira role */
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 2rem 2rem 0 2rem; /* Ajustado o padding */
+  margin-bottom: 2rem;
+}
+
+.botaoVoltar {
+  position: absolute;
+  left: 2rem; /* Ajustado para alinhar com o padding */
+  background: #2a2a2a;
+  border: 1px solid #333;
+  font-size: 1rem;
+  color: #f2c12e;
+  cursor: pointer;
+  padding: 0.6rem;
+  display: flex;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.botaoVoltar:hover {
+  background-color: #333;
+}
+
+.header h2 {
+  text-align: center;
+  margin: 0;
+  color: #f2c12e;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.content {
+  flex-grow: 1; /* Faz esta área ocupar todo o espaço vertical disponível */
+  overflow-y: auto; /* Adiciona a barra de rolagem vertical quando necessário */
+  padding: 0 2rem; /* Adiciona padding lateral */
+  max-width: 840px; /* Aumentado um pouco para incluir o padding */
+  width: 100%;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.card {
+  background-color: #1e1e1e;
+  padding: 1.5rem 2rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  margin-bottom: 1.5rem; /* Adicionado para espaçar os cards */
+}
+
+.card h3 {
+  margin-top: 0;
+  color: #f2c12e;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-bottom: 1px solid #333;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.card p {
+  color: #a0aec0;
+  font-size: 0.9rem;
+  margin-top: -1rem;
+  margin-bottom: 1.5rem;
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #a0aec0;
+}
+
+.timeInputs {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.timeInputs span {
+  color: #718096;
+}
+
+input[type="time"], input[type="date"], textarea {
+  background-color: #2d3748;
+  border: 1px solid #4a5568;
+  color: #e0e0e0;
+  padding: 0.5rem;
+  border-radius: 5px;
+  font-family: inherit;
+}
+
+textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.dateInputGroup {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dateInputGroup input {
+  flex-grow: 1;
+}
+
+.dateInputGroup button {
+  background-color: #333;
+  border: 1px solid #4a5568;
+  color: #f2c12e;
+  padding: 0 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.listaDatas {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.listaDatas li {
+  background-color: #2d3748;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.listaDatas button {
+  background: none;
+  border: none;
+  color: #e53e3e;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  padding: 2rem; /* Adicionado padding para espaçamento */
+  background-color: #121212;
+}
+
+.salvarTudoButton {
+  background-color: #f2c12e;
+  color: #121212;
+  border: none;
+  padding: 0.8rem 2rem;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.2s;
+  font-size: 1rem;
+}
+
+.salvarTudoButton:hover {
+  background-color: #dbae27;
+}
+
+/* --- ESTILOS DA BARRA DE ROLAGEM --- */
+.content::-webkit-scrollbar {
+  width: 8px; /* Largura da barra de rolagem */
+}
+
+.content::-webkit-scrollbar-track {
+  background: #1e1e1e; /* Fundo da trilha */
+  border-radius: 10px;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background-color: #f2c12e; /* Cor da barra (dourado) */
+  border-radius: 10px;
+  border: 2px solid #1e1e1e; /* Cria uma pequena borda ao redor da barra */
+}
+
+.content::-webkit-scrollbar-thumb:hover {
+  background-color: #dbae27; /* Cor da barra ao passar o mouse */
+}
