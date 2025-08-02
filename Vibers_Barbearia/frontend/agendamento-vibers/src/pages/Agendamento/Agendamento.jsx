@@ -13,7 +13,6 @@ function formatarTelefone(valor) {
   }
 }
 
-// Formata a data de 'yyyy-mm-dd' para 'dd/mm/yy'
 const formatarData = (dataStr) => {
   if (!dataStr) return "";
   const partes = dataStr.split("-");
@@ -42,9 +41,6 @@ const Agendamento = () => {
     horariosDisponiveis.length > 0 &&
     horariosDisponiveis.every((h) => horariosOcupados.includes(h));
 
-  // --- INÍCIO DA CORREÇÃO ---
-  // A lógica de filtragem de horários foi removida daqui,
-  // pois o backend já envia a lista corretamente filtrada.
   useEffect(() => {
     if (!formData.data || !formData.unidade) {
       setHorariosDisponiveis([]);
@@ -57,11 +53,9 @@ const Agendamento = () => {
     )
       .then((res) => res.json())
       .then((data) => {
-        // Apenas definimos os estados com os dados recebidos do backend.
         setHorariosDisponiveis(data.todos || []);
         setHorariosOcupados(data.ocupados || []);
 
-        // Se o horário atualmente selecionado ficou ocupado, limpa a seleção.
         if ((data.ocupados || []).includes(formData.horario)) {
           setFormData((prev) => ({ ...prev, horario: "" }));
         }
@@ -72,7 +66,6 @@ const Agendamento = () => {
         setHorariosOcupados([]);
       });
   }, [formData.data, formData.unidade]);
-  // --- FIM DA CORREÇÃO ---
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -107,11 +100,8 @@ const Agendamento = () => {
       } else if (response.status === 409) {
         setMensagemErro("Este horário já foi reservado. Por favor, escolha outro.");
         setMostrarConfirmacao(false);
-        
-        // Atualiza a lista de horários para refletir o novo horário ocupado.
         setHorariosOcupados(prev => [...prev, formData.horario]);
         setFormData((prev) => ({ ...prev, horario: "" }));
-
       } else {
         setMensagemErro("Erro ao agendar. Tente novamente.");
       }
@@ -125,86 +115,88 @@ const Agendamento = () => {
     formData.unidade === "1" ? "Unidade 1 - EQNP" : "Unidade 2 - QNP";
 
   return (
-    <div className={styles.wrapper}>
-      {/* ... (O resto do seu código JSX permanece o mesmo) ... */}
-      {mostrarConfirmacao && (
-        <div className={styles.modal}>
-          <div className={styles.modalContent}>
-            <h3>Confirmar Agendamento</h3>
-            <p><strong>Nome:</strong> {formData.nome} {formData.sobrenome}</p>
-            <p><strong>Email:</strong> {formData.email}</p>
-            <p><strong>Telefone:</strong> {formData.telefone}</p>
-            <p><strong>Data:</strong> {formatarData(formData.data)}</p>
-            <p><strong>Horário:</strong> {formData.horario}</p>
-            <p><strong>Unidade:</strong> {unidadeTexto}</p>
-            <div className={styles.modalButtons}>
-              <button onClick={enviarAgendamento}>Confirmar</button>
-              <button onClick={() => setMostrarConfirmacao(false)}>Editar</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {mensagemErro && (
-        <div className={styles.modal}>
+    // --- CORREÇÃO: Adicionado um container pai para aplicar o estilo da página ---
+    <div className={styles.pageContainer}>
+      <div className={styles.wrapper}>
+        {mostrarConfirmacao && (
+          <div className={styles.modal}>
             <div className={styles.modalContent}>
-              <p>{mensagemErro}</p>
+              <h3>Confirmar Agendamento</h3>
+              <p><strong>Nome:</strong> {formData.nome} {formData.sobrenome}</p>
+              <p><strong>Email:</strong> {formData.email}</p>
+              <p><strong>Telefone:</strong> {formData.telefone}</p>
+              <p><strong>Data:</strong> {formatarData(formData.data)}</p>
+              <p><strong>Horário:</strong> {formData.horario}</p>
+              <p><strong>Unidade:</strong> {unidadeTexto}</p>
               <div className={styles.modalButtons}>
-                <button onClick={() => setMensagemErro("")}>Ok</button>
+                <button onClick={enviarAgendamento}>Confirmar</button>
+                <button onClick={() => setMostrarConfirmacao(false)}>Editar</button>
               </div>
             </div>
+          </div>
+        )}
+
+        {mensagemErro && (
+          <div className={styles.modal}>
+              <div className={styles.modalContent}>
+                <p>{mensagemErro}</p>
+                <div className={styles.modalButtons}>
+                  <button onClick={() => setMensagemErro("")}>Ok</button>
+                </div>
+              </div>
+          </div>
+        )}
+
+        <div className={styles.leftPane}>
+          <h2>Preencha seus dados</h2>
+          <p>Escolha a data, horário e unidade desejada para o atendimento</p>
         </div>
-      )}
 
-      <div className={styles.leftPane}>
-        <h2>Preencha seus dados</h2>
-        <p>Escolha a data, horário e unidade desejada para o atendimento</p>
-      </div>
-
-      <div className={styles.rightPane}>
-        <form onSubmit={handleSubmit}>
-          <h2>Agendamento</h2>
-          <input type="text" name="nome" value={formData.nome} onChange={handleChange} placeholder="Nome" required />
-          <input type="text" name="sobrenome" value={formData.sobrenome} onChange={handleChange} placeholder="Sobrenome" required />
-          <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email" required />
-          <input type="tel" name="telefone" value={formData.telefone} onChange={handleChange} placeholder="Telefone" required />
-          <input type="date" name="data" value={formData.data} onChange={handleChange} min={today} required />
-          <select name="horario" value={formData.horario} onChange={handleChange} required>
-            <option value="">Selecione um horário</option>
-            {horariosDisponiveis.length > 0 ? (
-              horariosDisponiveis.map((horario) => (
-                <option
-                  key={horario}
-                  value={horario}
-                  disabled={horariosOcupados.includes(horario)}
-                >
-                  {horario}{" "}
-                  {horariosOcupados.includes(horario) ? "(Indisponível)" : ""}
-                </option>
-              ))
-            ) : (
-               formData.data && <option disabled>Nenhum horário disponível</option>
-            )}
-          </select>
-          <div className={styles.unidade}>
-            <label>
-              <input type="radio" name="unidade" value="1" checked={formData.unidade === "1"} onChange={handleChange} />
-              Unidade 1 - EQNP
-            </label>
-            <label>
-              <input type="radio" name="unidade" value="2" checked={formData.unidade === "2"} onChange={handleChange} />
-              Unidade 2 - QNP
-            </label>
-          </div>
-          <div className={styles.botaoContainer}>
-            <button type="submit" disabled={!formData.horario}>
-              Agendar
-            </button>
-            <button type="button" onClick={() => navigate("/")}>
-              Cancelar
-            </button>
-          </div>
-        </form>
+        <div className={styles.rightPane}>
+          <form onSubmit={handleSubmit}>
+            <h2>Agendamento</h2>
+            <input type="text" name="nome" value={formData.nome} onChange={handleChange} placeholder="Nome" required />
+            <input type="text" name="sobrenome" value={formData.sobrenome} onChange={handleChange} placeholder="Sobrenome" required />
+            <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email" required />
+            <input type="tel" name="telefone" value={formData.telefone} onChange={handleChange} placeholder="Telefone" required />
+            <input type="date" name="data" value={formData.data} onChange={handleChange} min={today} required />
+            <select name="horario" value={formData.horario} onChange={handleChange} required>
+              <option value="">Selecione um horário</option>
+              {horariosDisponiveis.length > 0 ? (
+                horariosDisponiveis.map((horario) => (
+                  <option
+                    key={horario}
+                    value={horario}
+                    disabled={horariosOcupados.includes(horario)}
+                  >
+                    {horario}{" "}
+                    {horariosOcupados.includes(horario) ? "(Indisponível)" : ""}
+                  </option>
+                ))
+              ) : (
+                formData.data && <option disabled>Nenhum horário disponível</option>
+              )}
+            </select>
+            <div className={styles.unidade}>
+              <label>
+                <input type="radio" name="unidade" value="1" checked={formData.unidade === "1"} onChange={handleChange} />
+                Unidade 1 - EQNP
+              </label>
+              <label>
+                <input type="radio" name="unidade" value="2" checked={formData.unidade === "2"} onChange={handleChange} />
+                Unidade 2 - QNP
+              </label>
+            </div>
+            <div className={styles.botaoContainer}>
+              <button type="submit" disabled={!formData.horario}>
+                Agendar
+              </button>
+              <button type="button" onClick={() => navigate("/")}>
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
