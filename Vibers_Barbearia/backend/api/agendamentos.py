@@ -1,8 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date 
 from flask import Blueprint, request, jsonify
 from database import get_db_connection
 
+# As importações do Twilio/WhatsApp foram removidas daqui
+
 agendamento_bp = Blueprint('agendamentos', __name__)
+
 
 def gerar_horarios(inicio_str, fim_str, intervalo_min=15):
     """
@@ -49,7 +52,7 @@ def horarios_disponiveis(data, unidade):
 
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT horario FROM agendamentos WHERE data = %s AND unidade = %s", (data, unidade))
+        cursor.execute("SELECT horario FROM agendamentos WHERE data = %s AND unidade = %s AND status != 'cancelado'", (data, unidade))
 
         ocupados = []
         for row in cursor.fetchall():
@@ -69,22 +72,28 @@ def horarios_disponiveis(data, unidade):
 
 @agendamento_bp.route("/agendamentos", methods=["GET"])
 def listar_agendamentos():
-    """
-    Lista todos os agendamentos existentes.
-    """
+    filtro_status = request.args.get('status', 'todos') # Pega o status do parâmetro da URL
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM agendamentos")
-        rows = cursor.fetchall()
-        cursor.close()
-        conn.close()
+        
+        query = "SELECT * FROM agendamentos"
+        params = []
 
-        # CORREÇÃO: Converte a data e a hora para strings com o formato correto
+        if filtro_status != 'todos':
+            query += " WHERE status = %s"
+            params.append(filtro_status)
+        
+        query += " ORDER BY data DESC, horario DESC" # Ordena os mais recentes primeiro
+
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+        
         for row in rows:
-            if isinstance(row.get("data"), datetime):
-                row["data"] = row["data"].strftime("%Y-%m-%d")
-            
+            data_obj = row.get("data")
+            if isinstance(data_obj, (datetime, date)):
+                row["data"] = data_obj.strftime("%Y-%m-%d")
+
             if isinstance(row.get("horario"), timedelta):
                 horario_td = row["horario"]
                 horas = int(horario_td.total_seconds() // 3600)
@@ -113,7 +122,7 @@ def criar_agendamento():
 
         cursor.execute("""
             SELECT COUNT(*) FROM agendamentos
-            WHERE data = %s AND horario = %s AND unidade = %s
+            WHERE data = %s AND horario = %s AND unidade = %s AND status != 'cancelado'
         """, (data["data"], data["horario"], int(data["unidade"])))
         (count,) = cursor.fetchone()
         if count > 0:
@@ -131,6 +140,9 @@ def criar_agendamento():
         )
         cursor.execute(sql, valores)
         conn.commit()
+
+        # --- LÓGICA DE ENVIO DE WHATSAPP REMOVIDA DESTA SEÇÃO ---
+
         cursor.close()
         conn.close()
         return jsonify({"message": "Agendamento salvo com sucesso"}), 201
@@ -176,3 +188,28 @@ def atualizar_status(id):
     except Exception as e:
         print("Erro ao atualizar status:", e)
         return jsonify({"error": "Erro ao atualizar status"}), 500
+
+@agendamento_bp.route("/agendamentos/stats", methods=["GET"])
+def agendamento_stats():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        query_status = "SELECT status, COUNT(id) as total FROM agendamentos GROUP BY status"
+        cursor.execute(query_status)
+        stats_status = cursor.fetchall()
+
+        query_hoje = "SELECT COUNT(id) as total FROM agendamentos WHERE data = CURDATE()"
+        cursor.execute(query_hoje)
+        stats_hoje = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
+
+        stats = {status['status']: status['total'] for status in stats_status}
+        stats['hoje'] = stats_hoje['total'] if stats_hoje else 0
+
+        return jsonify(stats)
+    except Exception as e:
+        print(f"Erro ao buscar stats: {e}")
+        return jsonify({"error": "Erro ao buscar estatísticas"}), 500
