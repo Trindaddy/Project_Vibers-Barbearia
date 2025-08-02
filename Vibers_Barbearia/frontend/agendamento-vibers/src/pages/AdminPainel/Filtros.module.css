@@ -1,0 +1,28 @@
+/* AdminPainel/Filtros.module.css */
+.container {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.container button {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    border: 1px solid #f2c12e;
+    background-color: transparent;
+    color: #f2c12e;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.container button:hover {
+    background-color: #f2c12e;
+    color: #121212;
+}
+
+.container button.ativo {
+    background-color: #f2c12e;
+    color: #121212;
+}
