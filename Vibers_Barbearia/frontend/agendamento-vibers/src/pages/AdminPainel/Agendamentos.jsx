@@ -1,9 +1,10 @@
 // AdminPainel/Agendamentos.jsx
 
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // Importado para navegação
 import { format } from "date-fns";
 import ptBR from "date-fns/locale/pt-BR";
-import { FaTrashAlt } from "react-icons/fa";
+import { FaTrashAlt, FaArrowLeft } from "react-icons/fa"; // Ícone de voltar adicionado
 import styles from "./Agendamentos.module.css";
 import Dashboard from './Dashboard';
 import stylesFiltro from './Filtros.module.css';
@@ -23,6 +24,7 @@ function formatarTelefone(telefone) {
 const API_BASE = "http://localhost:5000/api";
 
 export default function Agendamentos() {
+  const navigate = useNavigate(); // Hook para navegação
   const [agendamentos, setAgendamentos] = useState([]);
   const [mensagemErro, setMensagemErro] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("pendente");
@@ -90,23 +92,17 @@ export default function Agendamentos() {
     }
   };
 
-  // Efeito unificado para buscar dados e configurar a atualização automática.
-  // Roda na montagem do componente e sempre que o filtroStatus mudar.
   useEffect(() => {
-    // Busca os dados imediatamente ao carregar ou mudar de filtro.
     fetchAgendamentos();
     fetchStats();
 
-    // Configura o intervalo para atualizar ambos os dados periodicamente.
     const interval = setInterval(() => {
-      console.log("Atualizando dados automaticamente...");
       fetchAgendamentos();
       fetchStats();
-    }, 10000); // Atualiza a cada 10 segundos
+    }, 10000);
 
-    // Limpa o intervalo anterior sempre que o efeito for re-executado ou o componente for desmontado.
     return () => clearInterval(interval);
-  }, [filtroStatus]); // A dependência no filtro garante que a busca seja refeita imediatamente ao clicar nos botões.
+  }, [filtroStatus]);
 
   const STATUS_OPCOES = ["pendente", "concluido", "cancelado"];
 
@@ -114,7 +110,13 @@ export default function Agendamentos() {
     <div className={styles.container}>
       <Dashboard stats={stats} />
       
-      <h2>Agendamentos Recebidos</h2>
+      {/* --- NOVO CABEÇALHO COM BOTÃO DE VOLTAR --- */}
+      <div className={styles.header}>
+        <button onClick={() => navigate('/admin')} className={styles.botaoVoltar} title="Voltar ao Painel">
+          <FaArrowLeft />
+        </button>
+        <h2>Agendamentos Recebidos</h2>
+      </div>
 
       <div className={stylesFiltro.container}>
         <button onClick={() => setFiltroStatus('pendente')} className={filtroStatus === 'pendente' ? stylesFiltro.ativo : ''}>Pendentes</button>
