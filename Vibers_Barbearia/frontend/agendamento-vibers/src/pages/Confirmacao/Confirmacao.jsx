@@ -33,7 +33,6 @@ function Confirmacao() {
       <div className={styles.mensagemCentral}>
         <h1>💈 Nos vemos em breve!</h1>
         <div className={styles.checkIcon}>
-          {/* Recomendo usar ícones de uma biblioteca como react-icons para consistência */}
           <span className="material-symbols-outlined">check_circle</span>
         </div>
         <p className={styles.descricao}>
@@ -44,7 +43,6 @@ function Confirmacao() {
         <div className={styles.resumo}>
           <p>
             <span className="material-symbols-outlined">calendar_month</span>{" "}
-            {/* A variável já contém a data formatada */}
             <strong>Data:</strong> {dataFormatada}
           </p>
           <p>
