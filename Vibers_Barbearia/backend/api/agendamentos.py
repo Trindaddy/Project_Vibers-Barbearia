@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, date 
 from flask import Blueprint, request, jsonify
 from database import get_db_connection
+import json
 
 # As importações do Twilio/WhatsApp foram removidas daqui
 
@@ -27,19 +28,45 @@ def gerar_horarios(inicio_str, fim_str, intervalo_min=15):
 @agendamento_bp.route("/horarios-disponiveis/<data>/<int:unidade>", methods=["GET"])
 def horarios_disponiveis(data, unidade):
     """
-    Retorna todos os horários disponíveis para uma data e unidade específica.
+    Retorna todos os horários disponíveis, agora respeitando as configurações.
     """
     try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        # --- INÍCIO DA MODIFICAÇÃO ---
+
+        # 1. Busca as configurações do banco
+        cursor.execute("SELECT chave, valor FROM configuracoes")
+        configs_raw = cursor.fetchall()
+        configs = {row['chave']: row['valor'] for row in configs_raw}
+        
+        horarios_config = configs.get('horarios', {})
+        datas_bloqueadas = configs.get('datas_bloqueadas', [])
+
+        # 2. Verifica se a data solicitada está na lista de bloqueio
+        if data in datas_bloqueadas:
+            cursor.close()
+            conn.close()
+            return jsonify({"todos": [], "ocupados": []}) # Retorna vazio se o dia estiver bloqueado
+
+        # 3. Usa os horários do banco de dados em vez de valores fixos
         data_obj = datetime.strptime(data, "%Y-%m-%d")
         dia_semana = data_obj.weekday()  # 0=Segunda, ..., 6=Domingo
 
-        if 0 <= dia_semana <= 5:
-            inicio, fim = "08:00", "20:00"
-        else:
-            inicio, fim = "08:00", "13:00"
+        if 0 <= dia_semana <= 4: # Segunda a Sexta
+            horarios_dia = horarios_config.get('semana', {"inicio": "08:00", "fim": "20:00"})
+        else: # Sábado (e Domingo por segurança)
+            horarios_dia = horarios_config.get('sabado', {"inicio": "08:00", "fim": "13:00"})
+        
+        inicio, fim = horarios_dia['inicio'], horarios_dia['fim']
+        
+        # --- FIM DA MODIFICAÇÃO ---
 
         todos = gerar_horarios(inicio, fim, intervalo_min=15)
 
+        # ... (o resto da função, que filtra horários passados e ocupados, permanece o mesmo) ...
+        
         agora = datetime.now()
         if data_obj.date() == agora.date():
             hora_atual = agora.hour
@@ -50,10 +77,8 @@ def horarios_disponiveis(data, unidade):
                    (int(h.split(":")[0]) == hora_atual and int(h.split(":")[1]) > minuto_atual)
             ]
 
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT horario FROM agendamentos WHERE data = %s AND unidade = %s AND status != 'cancelado'", (data, unidade))
-
+        
         ocupados = []
         for row in cursor.fetchall():
             horario_td = row["horario"]
