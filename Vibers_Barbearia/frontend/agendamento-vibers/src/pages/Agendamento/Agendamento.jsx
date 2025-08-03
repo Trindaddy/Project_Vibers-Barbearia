@@ -115,7 +115,6 @@ const Agendamento = () => {
     formData.unidade === "1" ? "Unidade 1 - EQNP" : "Unidade 2 - QNP";
 
   return (
-    // --- CORREÇÃO: Adicionado um container pai para aplicar o estilo da página ---
     <div className={styles.pageContainer}>
       <div className={styles.wrapper}>
         {mostrarConfirmacao && (
