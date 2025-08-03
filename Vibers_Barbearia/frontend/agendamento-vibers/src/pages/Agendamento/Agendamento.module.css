@@ -1,27 +1,23 @@
-/* --- CORREÇÃO: Nova classe para estilizar o fundo da página --- */
 .pageContainer {
   font-family: 'Poppins', sans-serif;
   background-color: #FAE6B1;
   width: 100%;
   min-height: 100vh;
-  display: flex; /* Adicionado para ajudar na centralização do wrapper */
-  align-items: center; /* Adicionado para ajudar na centralização do wrapper */
-  justify-content: center; /* Adicionado para ajudar na centralização do wrapper */
-  /* --- ALTERAÇÃO: Padding removido para permitir a centralização perfeita --- */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
-/* O seletor global 'body' foi removido */
 
 .wrapper {
   display: flex;
   flex-direction: row;
   width: 100%;
   max-width: 1000px;
-  /* margin: 2rem auto; foi movido para o pageContainer para melhor centralização */
   background-color: white;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   border-radius: 10px;
   overflow: hidden;
+  transition: all 0.3s ease; /* Adicionado para suavizar a transição */
 }
 
 .leftPane {
@@ -37,11 +33,14 @@
 .leftPane h2 {
   font-size: 28px;
   margin-bottom: 1rem;
+  color: #2d2d2d; /* --- CORREÇÃO: Cor do título escurecida para melhor contraste --- */
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Sombra sutil para legibilidade */
 }
 
 .leftPane p {
   font-size: 16px;
   line-height: 1.4;
+  color: #4d4d4d; /* Cor do parágrafo escurecida */
 }
 
 .rightPane {
@@ -62,13 +61,33 @@ form h2 {
   font-size: 24px;
   margin-bottom: 1rem;
   align-self: center;
+  color: #FBCA3C; /* Título do formulário em dourado */
 }
 input, select {
   padding: 0.75rem;
   font-size: 14px;
   border: 2px solid black;
   border-radius: 5px;
+  background-color: #fff; /* Garante fundo branco */
+  color: #000; /* Garante texto preto */
 }
+
+/* --- CORREÇÃO: Estilos específicos para o input de data --- */
+input[type="date"] {
+  position: relative;
+  color-scheme: light; /* Força o fundo branco no seletor de data */
+}
+
+/* Remove o ícone padrão do calendário em navegadores WebKit (Chrome, Safari) */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.5;
+  cursor: pointer;
+}
+
 
 .unidade {
   display: flex;
@@ -124,7 +143,8 @@ input, select {
 
 .modalButtons {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 0.5rem;
   margin-top: 1rem;
 }
 
@@ -134,161 +154,42 @@ input, select {
   cursor: pointer;
   font-weight: bold;
   border-radius: 5px;
-}
-
-.modalButtons button:first-child {
-  /* background-color: #4caf50; */
   color: white;
-}
-
-.modalButtons button:last-child {
-  background-color: #f44336;
-  color: white;
-}
-/* --- CORREÇÃO: Nova classe para estilizar o fundo da página --- */
-.pageContainer {
-  font-family: 'Poppins', sans-serif;
-  background-color: #FAE6B1;
-  width: 100%;
-  min-height: 100vh;
-  display: flex; /* Adicionado para ajudar na centralização do wrapper */
-  align-items: center; /* Adicionado para ajudar na centralização do wrapper */
-  justify-content: center; /* Adicionado para ajudar na centralização do wrapper */
-  /* --- ALTERAÇÃO: Padding removido para permitir a centralização perfeita --- */
-}
-
-/* O seletor global 'body' foi removido */
-
-.wrapper {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 1000px;
-  /* margin: 2rem auto; foi movido para o pageContainer para melhor centralização */
-  background-color: white;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.leftPane {
-  background-color: #FBCA3C;
-  padding: 3rem;
-  width: 40%;
-  color: black;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.leftPane h2 {
-  font-size: 28px;
-  margin-bottom: 1rem;
-}
-
-.leftPane p {
-  font-size: 16px;
-  line-height: 1.4;
-}
-
-.rightPane {
-  padding: 3rem;
-  width: 60%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-form h2 {
-  font-size: 24px;
-  margin-bottom: 1rem;
-  align-self: center;
-}
-input, select {
-  padding: 0.75rem;
-  font-size: 14px;
-  border: 2px solid black;
-  border-radius: 5px;
-}
-
-.unidade {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-}
-
-.botaoContainer {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.botaoContainer button {
-  background-color: #FBCA3C;
-  color: black;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  font-weight: 500;
-  font-family: 'Poppins', sans-serif;
-  cursor: pointer;
-  border-radius: 5px;
-  transition: background-color 0.3s;
-}
-
-.botaoContainer button:hover {
-  background-color: #e0b12f;
-}
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-.modalContent {
-  background: #fff;
-  padding: 2rem;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 400px;
-  text-align: left;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-}
-
-.modalButtons {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 1rem;
-}
-
-.modalButtons button {
-  padding: 0.5rem 1rem;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  border-radius: 5px;
 }
 
 .modalButtons button:first-child {
   background-color: #4caf50;
-  color: white;
 }
 
 .modalButtons button:last-child {
   background-color: #f44336;
-  color: white;
+}
+
+/* --- SEÇÃO DE RESPONSIVIDADE --- */
+@media (max-width: 768px) {
+  .pageContainer {
+    align-items: flex-start; /* Alinha o conteúdo no topo */
+    padding: 0; /* Remove o padding para ocupar a tela toda */
+  }
+
+  .wrapper {
+    flex-direction: column; /* Empilha os painéis verticalmente */
+    border-radius: 0;
+    box-shadow: none;
+    min-height: 100vh;
+  }
+
+  .leftPane, .rightPane {
+    width: 100%; /* Ocupa a largura total */
+    box-sizing: border-box; /* Garante que o padding não quebre o layout */
+    padding: 2rem; /* Reduz o padding */
+  }
+
+  .leftPane {
+    text-align: center; /* Centraliza o texto no painel amarelo */
+  }
+
+  .botaoContainer {
+    flex-direction: column-reverse; /* Empilha os botões e inverte a ordem */
+  }
 }

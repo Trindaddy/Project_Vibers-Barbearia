@@ -12,6 +12,7 @@
   justify-content: space-between;
   align-items: flex-start;
   position: relative;
+  overflow: hidden;
 }
 
 .landingContainer::before {
@@ -30,11 +31,12 @@
 .botaoContainer {
   position: relative;
   z-index: 1;
+  box-sizing: border-box;
 }
 
 .header {
   padding: 2rem 4rem;
-  width: 10%;
+  width: 100%;
 }
 
 .header h3 {
@@ -44,11 +46,12 @@
 }
 
 .mainContent {
-  flex: 1;
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
   padding: 0 4rem;
+  width: 100%;
 }
 
 .slogan {
@@ -76,13 +79,6 @@
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  vertical-align: middle;
-  display: inline-flex;
-  line-height: 1;
-}
-
 .botaoContainer {
   background-color: #fff;
   padding: 1.5rem 0;
@@ -107,10 +103,17 @@
   background-color: #e5b61b;
 }
 
+/* --- SEÇÃO DE RESPONSIVIDADE --- */
 @media (max-width: 768px) {
-  .header,
+  .header {
+    padding: 1.5rem; /* Reduz o padding do cabeçalho */
+    text-align: center; /* Centraliza o nome da barbearia */
+  }
+  
   .mainContent {
     padding: 2rem;
+    align-items: center; /* Centraliza o slogan */
+    text-align: center; /* Centraliza o texto do slogan */
   }
 
   .slogan h1 {
@@ -119,5 +122,9 @@
 
   .destaque {
     font-size: 3rem;
+  }
+
+  .botaoContainer button {
+    width: 90%; /* Faz o botão ocupar mais espaço na tela */
   }
 }

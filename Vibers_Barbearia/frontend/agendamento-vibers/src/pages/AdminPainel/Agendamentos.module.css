@@ -1,10 +1,10 @@
 /* Tema Minimalista - Preto e Dourado */
-
 .container {
   padding: 2rem;
-  background-color: #121212; /* Fundo principal preto */
+  background-color: #121212;
   color: #e0e0e0;
   min-height: 100vh;
+  box-sizing: border-box;
 }
 
 .header {
@@ -42,11 +42,11 @@ h2 {
 }
 
 .tabelaContainer {
-  max-height: 45vh;
+  max-height: 50vh; /* Aumentado um pouco para telas mobile */
   overflow-y: auto;
   border-radius: 8px;
   margin: auto;
-  background-color: #1e1e1e; /* Fundo da tabela um pouco mais claro */
+  background-color: #1e1e1e;
   border: 1px solid #333;
 }
 
@@ -105,10 +105,9 @@ h2 {
   -moz-appearance: none;
   -webkit-appearance: none;
   appearance: none;
-  color: #e0e0e0; /* Cor do texto dentro do select */
+  color: #e0e0e0;
 }
 
-/* Novas cores para os status no tema escuro */
 .pendente {
   border-color: #f2c12e;
   background-color: rgba(242, 193, 46, 0.1);
@@ -127,22 +126,43 @@ h2 {
   color: red;
 }
 
-/* --- ESTILOS DA BARRA DE ROLAGEM --- */
 .tabelaContainer::-webkit-scrollbar {
-  width: 8px; /* Largura da barra de rolagem */
+  width: 8px;
 }
 
 .tabelaContainer::-webkit-scrollbar-track {
-  background: #1e1e1e; /* Fundo da trilha */
+  background: #1e1e1e;
   border-radius: 10px;
 }
 
 .tabelaContainer::-webkit-scrollbar-thumb {
-  background-color: #f2c12e; /* Cor da barra (dourado) */
+  background-color: #f2c12e;
   border-radius: 10px;
-  border: 2px solid #1e1e1e; /* Cria uma pequena borda ao redor da barra */
+  border: 2px solid #1e1e1e;
 }
 
 .tabelaContainer::-webkit-scrollbar-thumb:hover {
-  background-color: #dbae27; /* Cor da barra ao passar o mouse */
+  background-color: #dbae27;
+}
+
+/* --- SEÇÃO DE RESPONSIVIDADE --- */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .header h2 {
+    font-size: 1.1rem;
+  }
+
+  .tabela th, .tabela td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  /* Esconde a segunda coluna (Email) em telas pequenas */
+  .tabela th:nth-child(2),
+  .tabela td:nth-child(2) {
+    display: none;
+  }
 }

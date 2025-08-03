@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined");
+/* As importações de fontes foram removidas pois já existem no index.css */
 
 .paginaConfirmacao {
   background-color: #FAE6B1;
@@ -9,8 +8,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  /* --- ALTERAÇÃO: Padding lateral removido para permitir que o rodapé ocupe 100% da largura --- */
-  padding: 2rem 0 0 0; /* padding-bottom será controlado pelo container .botoes */
+  padding: 2rem 0 0 0;
 }
 
 .paginaConfirmacao h3 {
@@ -23,9 +21,9 @@
 .mensagemCentral {
   text-align: center;
   margin-top: -10rem;
-  width: 100%; /* Garante que o conteúdo central possa usar a largura total */
-  padding: 0 1rem; /* Adiciona o padding lateral que foi removido do pai */
-  box-sizing: border-box; /* Garante que o padding não aumente a largura total */
+  width: 100%;
+  padding: 0 1rem;
+  box-sizing: border-box;
 }
 
 .mensagemCentral h1 {
@@ -53,8 +51,8 @@
   color: #555;
   margin-bottom: 2rem;
   max-width: 90%;
-  margin-left: auto; /* Centraliza o texto */
-  margin-right: auto; /* Centraliza o texto */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .resumo {
@@ -62,10 +60,9 @@
   font-weight: 500;
   color: #000;
   text-align: left;
-  display: inline-flex; /* Altera para inline-flex para se ajustar ao conteúdo */
+  display: inline-flex;
   flex-direction: column;
   margin-top: 1rem;
-  /* margin-left foi removido para melhor alinhamento central */
 }
 
 .resumo p {
@@ -75,19 +72,14 @@
   margin-bottom: -4px;
 }
 
-.material-symbols-outlined {
-  font-size: 22px;
-}
-
-/* --- ALTERAÇÃO: O container dos botões agora tem largura total e padding interno --- */
 .botoes {
   width: 100%;
   display: flex;
   justify-content: center;
   gap: 1.5rem;
-  padding: 2.5rem 1rem; /* Adiciona padding interno */
+  padding: 2.5rem 1rem;
   background-color: white;
-  box-sizing: border-box; /* Garante que o padding não aumente a largura total */
+  box-sizing: border-box;
 }
 
 .botoes button {
@@ -103,9 +95,39 @@
   align-items: center;
   gap: 0.5rem;
   transition: background-color 0.3s ease;
-  /* margin-bottom: 1rem; removido para melhor controle pelo container pai */
 }
 
 .botoes button:hover {
   background-color: #e0b12f;
+}
+
+/* --- SEÇÃO DE RESPONSIVIDADE --- */
+@media (max-width: 768px) {
+  .paginaConfirmacao h3 {
+    font-size: 24px; /* Reduz o título principal */
+  }
+
+  .mensagemCentral {
+    margin-top: 0; /* Remove a margem negativa que joga o texto para cima */
+    flex-grow: 1; /* Permite que o conteúdo central ocupe o espaço */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .mensagemCentral h1 {
+    font-size: 36px; /* Reduz o título "Nos vemos em breve" */
+  }
+
+  .checkIcon .material-symbols-outlined {
+    font-size: 80px; /* Reduz o ícone de check */
+  }
+
+  .descricao {
+    font-size: 16px; /* Reduz o texto de descrição */
+  }
+
+  .resumo {
+    font-size: 16px; /* Reduz o texto do resumo */
+  }
 }
