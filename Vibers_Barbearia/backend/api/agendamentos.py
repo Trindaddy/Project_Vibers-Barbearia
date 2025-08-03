@@ -3,8 +3,6 @@ from flask import Blueprint, request, jsonify
 from database import get_db_connection
 import json
 
-# As importações do Twilio/WhatsApp foram removidas daqui
-
 agendamento_bp = Blueprint('agendamentos', __name__)
 
 
@@ -34,38 +32,52 @@ def horarios_disponiveis(data, unidade):
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
-        # --- INÍCIO DA MODIFICAÇÃO ---
-
         # 1. Busca as configurações do banco
         cursor.execute("SELECT chave, valor FROM configuracoes")
         configs_raw = cursor.fetchall()
         configs = {row['chave']: row['valor'] for row in configs_raw}
         
-        horarios_config = configs.get('horarios', {})
-        datas_bloqueadas = configs.get('datas_bloqueadas', [])
+        horarios_config = json.loads(configs.get('horarios', '{}'))
+        datas_bloqueadas = json.loads(configs.get('datas_bloqueadas', '[]'))
 
         # 2. Verifica se a data solicitada está na lista de bloqueio
         if data in datas_bloqueadas:
             cursor.close()
             conn.close()
-            return jsonify({"todos": [], "ocupados": []}) # Retorna vazio se o dia estiver bloqueado
+            return jsonify({"todos": [], "ocupados": []})
 
-        # 3. Usa os horários do banco de dados em vez de valores fixos
+        # --- LÓGICA DE HORÁRIOS CORRIGIDA E MAIS ROBUSTA ---
         data_obj = datetime.strptime(data, "%Y-%m-%d")
-        dia_semana = data_obj.weekday()  # 0=Segunda, ..., 6=Domingo
+        dia_semana = data_obj.weekday()
+
+        # Define horários padrão
+        default_horarios = {
+            "semana": {"inicio": "08:00", "fim": "20:00"},
+            "sabado": {"inicio": "08:00", "fim": "13:00"}
+        }
 
         if 0 <= dia_semana <= 4: # Segunda a Sexta
-            horarios_dia = horarios_config.get('semana', {"inicio": "08:00", "fim": "20:00"})
+            horarios_dia = default_horarios['semana'].copy() # Começa com o padrão
+            config_semana = horarios_config.get('semana', {})
+            if isinstance(config_semana, dict):
+                horarios_dia.update(config_semana) # Atualiza com o que estiver salvo no DB
         else: # Sábado (e Domingo por segurança)
-            horarios_dia = horarios_config.get('sabado', {"inicio": "08:00", "fim": "13:00"})
+            horarios_dia = default_horarios['sabado'].copy()
+            config_sabado = horarios_config.get('sabado', {})
+            if isinstance(config_sabado, dict):
+                horarios_dia.update(config_sabado)
         
-        inicio, fim = horarios_dia['inicio'], horarios_dia['fim']
+        inicio = horarios_dia.get('inicio')
+        fim = horarios_dia.get('fim')
         
-        # --- FIM DA MODIFICAÇÃO ---
-
+        # Verificação de segurança final
+        if not inicio or not fim:
+            print(f"Atenção: Horários de funcionamento inválidos ou incompletos para a data {data}. Retornando lista vazia.")
+            cursor.close()
+            conn.close()
+            return jsonify({"todos": [], "ocupados": []})
+        
         todos = gerar_horarios(inicio, fim, intervalo_min=15)
-
-        # ... (o resto da função, que filtra horários passados e ocupados, permanece o mesmo) ...
         
         agora = datetime.now()
         if data_obj.date() == agora.date():
@@ -97,7 +109,7 @@ def horarios_disponiveis(data, unidade):
 
 @agendamento_bp.route("/agendamentos", methods=["GET"])
 def listar_agendamentos():
-    filtro_status = request.args.get('status', 'todos') # Pega o status do parâmetro da URL
+    filtro_status = request.args.get('status', 'todos')
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -109,7 +121,7 @@ def listar_agendamentos():
             query += " WHERE status = %s"
             params.append(filtro_status)
         
-        query += " ORDER BY data DESC, horario DESC" # Ordena os mais recentes primeiro
+        query += " ORDER BY data DESC, horario DESC"
 
         cursor.execute(query, params)
         rows = cursor.fetchall()
@@ -124,7 +136,9 @@ def listar_agendamentos():
                 horas = int(horario_td.total_seconds() // 3600)
                 minutos = int((horario_td.total_seconds() % 3600) // 60)
                 row["horario"] = f"{horas:02d}:{minutos:02d}"
-
+        
+        cursor.close()
+        conn.close()
         return jsonify(rows)
     except Exception as e:
         print("Erro ao listar agendamentos:", e)
@@ -132,9 +146,6 @@ def listar_agendamentos():
 
 @agendamento_bp.route("/agendamentos", methods=["POST"])
 def criar_agendamento():
-    """
-    Cria um novo agendamento.
-    """
     data = request.get_json()
 
     required_fields = ["nome", "sobrenome", "email", "telefone", "data", "horario", "unidade"]
@@ -166,8 +177,6 @@ def criar_agendamento():
         cursor.execute(sql, valores)
         conn.commit()
 
-        # --- LÓGICA DE ENVIO DE WHATSAPP REMOVIDA DESTA SEÇÃO ---
-
         cursor.close()
         conn.close()
         return jsonify({"message": "Agendamento salvo com sucesso"}), 201
@@ -178,9 +187,6 @@ def criar_agendamento():
 
 @agendamento_bp.route("/agendamentos/<int:id>", methods=["DELETE"])
 def deletar_agendamento(id):
-    """
-    Deleta um agendamento com base no ID.
-    """
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -195,9 +201,6 @@ def deletar_agendamento(id):
 
 @agendamento_bp.route("/agendamentos/<int:id>/status", methods=["PATCH"])
 def atualizar_status(id):
-    """
-    Atualiza o status de um agendamento.
-    """
     novo_status = request.json.get("status")
     if novo_status not in ["pendente", "confirmado", "concluido", "cancelado"]:
         return jsonify({"error": "Status inválido"}), 400
