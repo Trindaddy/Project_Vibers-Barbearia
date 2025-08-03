@@ -1,5 +1,5 @@
 // AdminPainel/Configuracoes.jsx
-import React, { useState, useEffect } from 'react'; // Adicionado useEffect
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaClock, FaCalendarTimes, FaCommentDots } from 'react-icons/fa';
 import styles from './Configuracoes.module.css';
@@ -9,7 +9,6 @@ const API_BASE = "http://localhost:5000/api";
 const Configuracoes = () => {
   const navigate = useNavigate();
   
-  // Estados para cada configuração, agora iniciando vazios
   const [horarios, setHorarios] = useState({
     semana: { inicio: '', fim: '' },
     sabado: { inicio: '', fim: '' },
@@ -21,22 +20,53 @@ const Configuracoes = () => {
     lembrete: "",
   });
 
-  // --- NOVO: Busca as configurações salvas quando a página carrega ---
   useEffect(() => {
     const fetchConfiguracoes = async () => {
       try {
         const res = await fetch(`${API_BASE}/configuracoes`);
         const data = await res.json();
-        // Garante que a estrutura do estado é mantida mesmo que os dados da API venham incompletos
-        if (data.horarios) setHorarios(prev => ({...prev, ...data.horarios}));
-        if (data.datas_bloqueadas) setDatasBloqueadas(data.datas_bloqueadas);
-        if (data.mensagens) setMensagens(prev => ({...prev, ...data.mensagens}));
+        
+        // --- CORREÇÃO AINDA MAIS ROBUSTA ---
+        // Garante que os dados são do tipo correto antes de atualizar o estado.
+
+        // Para Horarios
+        const fetchedHorarios = data.horarios || {};
+        if (typeof fetchedHorarios === 'object' && !Array.isArray(fetchedHorarios)) {
+            setHorarios(prev => ({
+                semana: {...prev.semana, ...fetchedHorarios.semana},
+                sabado: {...prev.sabado, ...fetchedHorarios.sabado}
+            }));
+        }
+        
+        // Para Datas Bloqueadas
+        let fetchedBlockedDates = data.datas_bloqueadas || [];
+        if (typeof fetchedBlockedDates === 'string') {
+          try {
+            fetchedBlockedDates = JSON.parse(fetchedBlockedDates);
+          } catch (e) {
+            console.error("Falha ao fazer parse das datas bloqueadas:", e);
+            fetchedBlockedDates = [];
+          }
+        }
+        // A verificação final garante que apenas uma lista seja definida no estado
+        if (Array.isArray(fetchedBlockedDates)) {
+          setDatasBloqueadas(fetchedBlockedDates);
+        } else {
+          setDatasBloqueadas([]); // Como último recurso, define uma lista vazia
+        }
+
+        // Para Mensagens
+        const fetchedMensagens = data.mensagens || {};
+        if (typeof fetchedMensagens === 'object' && !Array.isArray(fetchedMensagens)) {
+            setMensagens(prev => ({...prev, ...fetchedMensagens}));
+        }
+
       } catch (error) {
         console.error("Erro ao carregar configurações:", error);
       }
     };
     fetchConfiguracoes();
-  }, []); // O array vazio [] garante que isso rode apenas uma vez
+  }, []);
 
   const handleAddData = () => {
     if (dataInput && !datasBloqueadas.includes(dataInput)) {
@@ -49,7 +79,6 @@ const Configuracoes = () => {
     setDatasBloqueadas(datasBloqueadas.filter(d => d !== dataParaRemover));
   };
 
-  // --- ATUALIZADO: Agora envia os dados para o backend ---
   const handleSalvarTudo = async () => {
     try {
       const payload = {
@@ -91,7 +120,6 @@ const Configuracoes = () => {
           <div className={styles.formGroup}>
             <label>Segunda a Sexta</label>
             <div className={styles.timeInputs}>
-              {/* --- CORREÇÃO: Adicionado optional chaining (?.) e valor padrão || '' --- */}
               <input type="time" value={horarios?.semana?.inicio || ''} onChange={e => setHorarios({...horarios, semana: {...horarios.semana, inicio: e.target.value}})} />
               <span>até</span>
               <input type="time" value={horarios?.semana?.fim || ''} onChange={e => setHorarios({...horarios, semana: {...horarios.semana, fim: e.target.value}})} />
