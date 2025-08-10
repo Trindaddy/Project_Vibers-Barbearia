@@ -8,8 +8,7 @@ from datetime import datetime, timedelta
 
 auth_bp = Blueprint('auth', __name__)
 
-# A chave secreta deve ser a mesma no app.py
-SECRET_KEY = os.getenv('SECRET_KEY', 'sua-chave-secreta-padrao-muito-segura')
+SECRET_KEY = os.getenv('SECRET_KEY', 'default-fallback-secret-key')
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
@@ -30,11 +29,10 @@ def login():
     if not user or not check_password_hash(user['password_hash'], password):
         return jsonify({"message": "Usuário ou senha inválidos"}), 401
 
-    # Cria o token JWT
     token = jwt.encode({
         'user_id': user['id'],
         'role': user['role'],
-        'exp': datetime.utcnow() + timedelta(hours=8) # Token expira em 8 horas
+        'exp': datetime.utcnow() + timedelta(hours=8)
     }, SECRET_KEY, algorithm="HS256")
 
     return jsonify({"token": token})
