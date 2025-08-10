@@ -3,18 +3,47 @@
   color: #f2c12e;
   min-height: 100vh;
   padding: 2rem;
-  text-align: center;
   box-sizing: border-box;
 }
 
+/* --- NOVOS ESTILOS --- */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  text-align: left;
+  margin-bottom: 2rem;
+}
+
+.logoutButton {
+  background: none;
+  border: 1px solid #333;
+  color: #a0aec0;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.75rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.logoutButton:hover {
+  background-color: #f2c12e;
+  color: #121212;
+  border-color: #f2c12e;
+}
+/* --- FIM DOS NOVOS ESTILOS --- */
+
 .title {
   font-size: 2.5rem;
-  margin-bottom: 0.5rem;
+  margin: 0;
 }
 
 .subtitle {
   color: #ffffff;
-  margin-bottom: 2rem;
+  margin: 0.5rem 0 0 0;
 }
 
 .cardContainer {
@@ -71,10 +100,17 @@
   background-color: #dbae27;
 }
 
-/* --- SEÇÃO DE RESPONSIVIDADE --- */
 @media (max-width: 768px) {
   .container {
     padding: 1.5rem;
+  }
+  .header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .logoutButton {
+    margin-top: 1rem;
   }
   .title {
     font-size: 2rem;
