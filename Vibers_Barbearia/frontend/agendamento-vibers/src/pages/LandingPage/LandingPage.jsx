@@ -1,8 +1,28 @@
+import React, { useState, useEffect } from 'react'; // Adicionado useState e useEffect
 import { useNavigate } from "react-router-dom";
 import styles from './LandingPage.module.css';
 
+const API_BASE = "http://localhost:5000";
+
 function LandingPage() {
   const navigate = useNavigate();
+  const [logoUrl, setLogoUrl] = useState(''); // Estado para a URL da logo
+
+  // Busca a URL da logo ao carregar a página
+  useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/configuracoes`);
+        const data = await res.json();
+        if (data.logo_url) {
+          setLogoUrl(`${API_BASE}${data.logo_url}`);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar logo:", error);
+      }
+    };
+    fetchLogo();
+  }, []);
 
   const irParaAgendamento = () => {
     navigate("/agendamento");
@@ -11,7 +31,12 @@ function LandingPage() {
   return (
     <div className={styles.landingContainer}>
       <div className={styles.header}>
-        <h3>Viber’s Barbearias</h3>
+        {/* O h3 foi substituído por uma imagem */}
+        {logoUrl ? (
+          <img src={logoUrl} alt="Viber's Barbearias Logo" className={styles.logo} />
+        ) : (
+          <h3>Viber’s Barbearias</h3>
+        )}
       </div>
 
       <div className={styles.mainContent}>
