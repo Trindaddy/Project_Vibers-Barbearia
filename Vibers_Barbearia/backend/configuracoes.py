@@ -4,8 +4,28 @@ from database.database import get_db_connection
 import json
 import os
 from werkzeug.utils import secure_filename
+from functools import wraps
+import jwt
 
+SECRET_KEY = os.getenv('SECRET_KEY', 'default-fallback-secret-key')
 config_bp = Blueprint('configuracoes', __name__)
+
+# --- DECORATOR DE AUTENTICAÇÃO ---
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        if 'Authorization' in request.headers:
+            token = request.headers['Authorization'].split(" ")[1]
+        if not token:
+            return jsonify({'message': 'Token de acesso faltando!'}), 401
+        try:
+            jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        except Exception as e:
+            return jsonify({'message': f'Token inválido ou expirado: {e}'}), 401
+        return f(*args, **kwargs)
+    return decorated
+
 
 # Define a pasta onde as logos serão salvas
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
@@ -18,7 +38,9 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+# --- ROTAS PROTEGIDAS ---
 @config_bp.route("/configuracoes", methods=["GET"])
+@token_required
 def obter_configuracoes():
     """Busca todas as configurações do banco de dados."""
     try:
@@ -35,6 +57,7 @@ def obter_configuracoes():
         return jsonify({"error": "Erro ao buscar configurações"}), 500
 
 @config_bp.route("/configuracoes", methods=["POST"])
+@token_required
 def salvar_configuracoes():
     """Salva as configurações enviadas pelo painel de admin."""
     data = request.get_json()
@@ -53,8 +76,8 @@ def salvar_configuracoes():
         print(f"Erro ao salvar configurações: {e}")
         return jsonify({"error": "Erro ao salvar configurações"}), 500
 
-# --- NOVA ROTA PARA UPLOAD DA LOGO ---
 @config_bp.route('/logo/upload', methods=['POST'])
+@token_required
 def upload_logo():
     if 'logo' not in request.files:
         return jsonify({"error": "Nenhum arquivo enviado"}), 400
