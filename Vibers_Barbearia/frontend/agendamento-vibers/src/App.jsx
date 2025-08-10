@@ -7,6 +7,7 @@ import AdminPainel from './pages/AdminPainel/AdminPainel.jsx';
 import Agendamentos from './pages/AdminPainel/Agendamentos';
 import GerenciarLogos from './pages/AdminPainel/GerenciarLogos';
 import Configuracoes from './pages/AdminPainel/Configuracoes';
+import Login from './pages/Login/Login'; // Importa a página de login
 
 function App() {
   return (
@@ -15,6 +16,8 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/agendamento" element={<Agendamento />} />
         <Route path="/confirmacao" element={<Confirmacao />} />
+        <Route path="/login" element={<Login />} /> {/* Adiciona a rota */}
+        
         <Route path="/admin" element={<AdminPainel />} />
         <Route path="/admin/agendamentos" element={<Agendamentos />} />
         <Route path="/admin/logos" element={<GerenciarLogos />} />
