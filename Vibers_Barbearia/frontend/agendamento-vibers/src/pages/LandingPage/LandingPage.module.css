@@ -103,6 +103,11 @@
   background-color: #e5b61b;
 }
 
+.logo {
+  height: 50px; /* Ou o tamanho que preferir */
+  width: auto;
+}
+
 /* --- SEÇÃO DE RESPONSIVIDADE --- */
 @media (max-width: 768px) {
   .header {
