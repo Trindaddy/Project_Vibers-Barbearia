@@ -18,16 +18,37 @@ def login():
 
     username = data['username']
     password = data['password']
+    
+    # --- INÍCIO DO DIAGNÓSTICO ---
+    print("\n--- TENTATIVA DE LOGIN ---")
+    print(f"Recebido - Utilizador: '{username}', Palavra-passe: '{password}'")
 
     conn = get_db_connection()
+    if not conn:
+        print("FALHA: Não foi possível conectar à base de dados.")
+        return jsonify({"message": "Erro interno do servidor"}), 500
+        
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM usuarios WHERE username = %s", (username,))
     user = cursor.fetchone()
     cursor.close()
     conn.close()
 
-    if not user or not check_password_hash(user['password_hash'], password):
-        return jsonify({"message": "Usuário ou senha inválidos"}), 401
+    if not user:
+        print(f"FALHA: Utilizador '{username}' não encontrado na base de dados.")
+        return jsonify({"message": "Utilizador ou palavra-passe inválidos"}), 401
+    
+    print(f"SUCESSO: Utilizador '{username}' encontrado.")
+    print(f"Hash da BD: {user['password_hash']}")
+    
+    is_password_correct = check_password_hash(user['password_hash'], password)
+    
+    if not is_password_correct:
+        print("FALHA: A verificação da palavra-passe (check_password_hash) retornou FALSO.")
+        return jsonify({"message": "Utilizador ou palavra-passe inválidos"}), 401
+    
+    print("SUCESSO: A verificação da palavra-passe retornou VERDADEIRO.")
+    # --- FIM DO DIAGNÓSTICO ---
 
     token = jwt.encode({
         'user_id': user['id'],
@@ -35,6 +56,7 @@ def login():
         'exp': datetime.utcnow() + timedelta(hours=8)
     }, SECRET_KEY, algorithm="HS256")
 
+    print("SUCESSO: Token JWT gerado. Login bem-sucedido!")
     return jsonify({"token": token})
 
 # Rota de utilidade para criar um novo usuário (use com cuidado)
@@ -42,7 +64,7 @@ def login():
 def register():
     data = request.get_json()
     if not data or not data.get('username') or not data.get('password'):
-        return jsonify({"message": "Dados para registro incompletos"}), 400
+        return jsonify({"message": "Dados para registo incompletos"}), 400
     
     hashed_password = generate_password_hash(data['password'], method='pbkdf2:sha256:600000')
     
@@ -53,6 +75,6 @@ def register():
         conn.commit()
         cursor.close()
         conn.close()
-        return jsonify({"message": "Usuário registrado com sucesso!"}), 201
+        return jsonify({"message": "Utilizador registado com sucesso!"}), 201
     except Exception as e:
-        return jsonify({"message": f"Erro ao registrar usuário: {e}"}), 500
+        return jsonify({"message": f"Erro ao registar utilizador: {e}"}), 500
