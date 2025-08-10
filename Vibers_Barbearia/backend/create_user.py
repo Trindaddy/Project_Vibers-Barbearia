@@ -42,8 +42,8 @@ def create_user():
         cursor.close()
         conn.close()
         
-        print(f"Utilizador '{username}' criado/atualizado com sucesso!")
-        print(f"Hash gerado: {hashed_password}")
+        # print(f"Utilizador '{username}' criado/atualizado com sucesso!")
+        # print(f"Hash gerado: {hashed_password}")
 
     except Exception as e:
         print(f"Ocorreu um erro: {e}")
