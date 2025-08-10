@@ -16,7 +16,6 @@ app.register_blueprint(agendamento_bp, url_prefix="/api")
 app.register_blueprint(config_bp, url_prefix="/api")
 
 # --- NOVA ROTA PARA SERVIR AS IMAGENS ---
-# Permite que o frontend acesse as imagens em http://localhost:5000/uploads/nome_do_arquivo.png
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
