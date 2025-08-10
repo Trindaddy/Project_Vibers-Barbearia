@@ -1,14 +1,14 @@
 # app.py
 from flask import Flask, send_from_directory
 from flask_cors import CORS
+import os
+
+# A chamada a load_dotenv() foi removida daqui, pois agora está no database.py
 from agendamentos import agendamento_bp
 from configuracoes import config_bp
 from auth import auth_bp
 from database.database import get_db_connection
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'default-fallback-secret-key')
