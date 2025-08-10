@@ -1,11 +1,30 @@
-from datetime import datetime, timedelta, date 
+# agendamentos.py
 from flask import Blueprint, request, jsonify
-# --- CORREÇÃO: Caminho da importação ajustado ---
 from database.database import get_db_connection
 import json
+from datetime import datetime, timedelta, date
+from functools import wraps
+import jwt
+import os
 
+SECRET_KEY = os.getenv('SECRET_KEY', 'default-fallback-secret-key')
 agendamento_bp = Blueprint('agendamentos', __name__)
 
+# --- DECORATOR DE AUTENTICAÇÃO ---
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        if 'Authorization' in request.headers:
+            token = request.headers['Authorization'].split(" ")[1]
+        if not token:
+            return jsonify({'message': 'Token de acesso faltando!'}), 401
+        try:
+            jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        except Exception as e:
+            return jsonify({'message': f'Token inválido ou expirado: {e}'}), 401
+        return f(*args, **kwargs)
+    return decorated
 
 def gerar_horarios(inicio_str, fim_str, intervalo_min=15):
     """
@@ -24,6 +43,7 @@ def gerar_horarios(inicio_str, fim_str, intervalo_min=15):
 
     return horarios
 
+# --- ROTAS PÚBLICAS (NÃO PRECISAM DE TOKEN) ---
 @agendamento_bp.route("/horarios-disponiveis/<data>/<int:unidade>", methods=["GET"])
 def horarios_disponiveis(data, unidade):
     """
@@ -108,43 +128,6 @@ def horarios_disponiveis(data, unidade):
         print("Erro ao obter horários disponíveis:", e)
         return jsonify({"erro": "Erro ao buscar horários disponíveis"}), 500
 
-@agendamento_bp.route("/agendamentos", methods=["GET"])
-def listar_agendamentos():
-    filtro_status = request.args.get('status', 'todos')
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor(dictionary=True)
-        
-        query = "SELECT * FROM agendamentos"
-        params = []
-
-        if filtro_status != 'todos':
-            query += " WHERE status = %s"
-            params.append(filtro_status)
-        
-        query += " ORDER BY data DESC, horario DESC"
-
-        cursor.execute(query, params)
-        rows = cursor.fetchall()
-        
-        for row in rows:
-            data_obj = row.get("data")
-            if isinstance(data_obj, (datetime, date)):
-                row["data"] = data_obj.strftime("%Y-%m-%d")
-
-            if isinstance(row.get("horario"), timedelta):
-                horario_td = row["horario"]
-                horas = int(horario_td.total_seconds() // 3600)
-                minutos = int((horario_td.total_seconds() % 3600) // 60)
-                row["horario"] = f"{horas:02d}:{minutos:02d}"
-        
-        cursor.close()
-        conn.close()
-        return jsonify(rows)
-    except Exception as e:
-        print("Erro ao listar agendamentos:", e)
-        return jsonify({"error": "Erro ao listar agendamentos"}), 500
-
 @agendamento_bp.route("/agendamentos", methods=["POST"])
 def criar_agendamento():
     data = request.get_json()
@@ -185,8 +168,49 @@ def criar_agendamento():
     except Exception as e:
         print("Erro ao inserir agendamento:", e)
         return jsonify({"error": "Erro ao salvar o agendamento"}), 500
+    
+# --- ROTAS PROTEGIDAS (PRECISAM DE TOKEN) ---
+@agendamento_bp.route("/agendamentos", methods=["GET"])
+@token_required
+def listar_agendamentos():
+    filtro_status = request.args.get('status', 'todos')
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        query = "SELECT * FROM agendamentos"
+        params = []
+
+        if filtro_status != 'todos':
+            query += " WHERE status = %s"
+            params.append(filtro_status)
+        
+        query += " ORDER BY data DESC, horario DESC"
+
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+        
+        for row in rows:
+            data_obj = row.get("data")
+            if isinstance(data_obj, (datetime, date)):
+                row["data"] = data_obj.strftime("%Y-%m-%d")
+
+            if isinstance(row.get("horario"), timedelta):
+                horario_td = row["horario"]
+                horas = int(horario_td.total_seconds() // 3600)
+                minutos = int((horario_td.total_seconds() % 3600) // 60)
+                row["horario"] = f"{horas:02d}:{minutos:02d}"
+        
+        cursor.close()
+        conn.close()
+        return jsonify(rows)
+    except Exception as e:
+        print("Erro ao listar agendamentos:", e)
+        return jsonify({"error": "Erro ao listar agendamentos"}), 500
+
 
 @agendamento_bp.route("/agendamentos/<int:id>", methods=["DELETE"])
+@token_required
 def deletar_agendamento(id):
     try:
         conn = get_db_connection()
@@ -201,6 +225,7 @@ def deletar_agendamento(id):
         return jsonify({"error": "Erro ao excluir o agendamento"}), 500
 
 @agendamento_bp.route("/agendamentos/<int:id>/status", methods=["PATCH"])
+@token_required
 def atualizar_status(id):
     novo_status = request.json.get("status")
     if novo_status not in ["pendente", "confirmado", "concluido", "cancelado"]:
@@ -219,6 +244,7 @@ def atualizar_status(id):
         return jsonify({"error": "Erro ao atualizar status"}), 500
 
 @agendamento_bp.route("/agendamentos/stats", methods=["GET"])
+@token_required
 def agendamento_stats():
     try:
         conn = get_db_connection()
