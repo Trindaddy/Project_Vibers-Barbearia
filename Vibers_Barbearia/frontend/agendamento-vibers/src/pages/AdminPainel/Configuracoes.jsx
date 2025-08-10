@@ -1,7 +1,7 @@
 // AdminPainel/Configuracoes.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaClock, FaCalendarTimes, FaCommentDots } from 'react-icons/fa';
+import { FaArrowLeft, FaClock, FaCalendarTimes } from 'react-icons/fa';
 import styles from './Configuracoes.module.css';
 
 const API_BASE = "http://localhost:5000/api";
@@ -15,21 +15,30 @@ const Configuracoes = () => {
   });
   const [datasBloqueadas, setDatasBloqueadas] = useState([]);
   const [dataInput, setDataInput] = useState('');
-  const [mensagens, setMensagens] = useState({
-    confirmacao: "",
-    lembrete: "",
-  });
+
+  // --- LÓGICA DE PROTEÇÃO MOVIDA PARA DENTRO DO COMPONENTE ---
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      navigate('/login');
+    }
+  }, [navigate]);
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('authToken');
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+  };
 
   useEffect(() => {
     const fetchConfiguracoes = async () => {
       try {
-        const res = await fetch(`${API_BASE}/configuracoes`);
+        // Adicionado o cabeçalho de autenticação
+        const res = await fetch(`${API_BASE}/configuracoes`, { headers: getAuthHeaders() });
         const data = await res.json();
         
-        // --- CORREÇÃO AINDA MAIS ROBUSTA ---
-        // Garante que os dados são do tipo correto antes de atualizar o estado.
-
-        // Para Horarios
         const fetchedHorarios = data.horarios || {};
         if (typeof fetchedHorarios === 'object' && !Array.isArray(fetchedHorarios)) {
             setHorarios(prev => ({
@@ -38,7 +47,6 @@ const Configuracoes = () => {
             }));
         }
         
-        // Para Datas Bloqueadas
         let fetchedBlockedDates = data.datas_bloqueadas || [];
         if (typeof fetchedBlockedDates === 'string') {
           try {
@@ -48,17 +56,10 @@ const Configuracoes = () => {
             fetchedBlockedDates = [];
           }
         }
-        // A verificação final garante que apenas uma lista seja definida no estado
         if (Array.isArray(fetchedBlockedDates)) {
           setDatasBloqueadas(fetchedBlockedDates);
         } else {
-          setDatasBloqueadas([]); // Como último recurso, define uma lista vazia
-        }
-
-        // Para Mensagens
-        const fetchedMensagens = data.mensagens || {};
-        if (typeof fetchedMensagens === 'object' && !Array.isArray(fetchedMensagens)) {
-            setMensagens(prev => ({...prev, ...fetchedMensagens}));
+          setDatasBloqueadas([]);
         }
 
       } catch (error) {
@@ -84,12 +85,12 @@ const Configuracoes = () => {
       const payload = {
         horarios,
         datas_bloqueadas: datasBloqueadas,
-        mensagens,
       };
       
+      // Adicionado o cabeçalho de autenticação
       const response = await fetch(`${API_BASE}/configuracoes`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(payload),
       });
 
@@ -151,20 +152,6 @@ const Configuracoes = () => {
               </li>
             ))}
           </ul>
-        </div>
-
-        {/* Card de Mensagens */}
-        <div className={styles.card}>
-          <h3><FaCommentDots /> Mensagens Automáticas</h3>
-          <p>Use [Nome], [Data], [Horário] e [Unidade] para personalizar.</p>
-          <div className={styles.formGroup}>
-            <label>Mensagem de Confirmação</label>
-            <textarea value={mensagens?.confirmacao || ''} onChange={e => setMensagens({...mensagens, confirmacao: e.target.value})} rows="4"></textarea>
-          </div>
-          <div className={styles.formGroup}>
-            <label>Mensagem de Lembrete (1 dia antes)</label>
-            <textarea value={mensagens?.lembrete || ''} onChange={e => setMensagens({...mensagens, lembrete: e.target.value})} rows="4"></textarea>
-          </div>
         </div>
       </div>
       

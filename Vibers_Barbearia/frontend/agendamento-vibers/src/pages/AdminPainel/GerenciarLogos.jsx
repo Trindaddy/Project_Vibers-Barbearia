@@ -1,15 +1,53 @@
 // AdminPainel/GerenciarLogos.jsx
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaUpload, FaPalette } from 'react-icons/fa';
 import styles from './GerenciarLogos.module.css';
 
+const API_BASE = "http://localhost:5000";
+
 const GerenciarLogos = () => {
   const navigate = useNavigate();
-  const [logoAtual, setLogoAtual] = useState('https://placehold.co/200x100/f2c12e/121212?text=Viber\'s');
+  const [logoAtual, setLogoAtual] = useState('');
   const [novaLogo, setNovaLogo] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
   const fileInputRef = useRef(null);
+
+  // --- LÓGICA DE PROTEÇÃO MOVIDA PARA DENTRO DO COMPONENTE ---
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      navigate('/login'); // Redireciona se não houver token
+    }
+  }, [navigate]);
+
+  const getAuthHeaders = (isJson = true) => {
+    const token = localStorage.getItem('authToken');
+    const headers = {
+      'Authorization': `Bearer ${token}`
+    };
+    if (isJson) {
+      headers['Content-Type'] = 'application/json';
+    }
+    return headers;
+  };
+
+  // Busca a logo atual ao carregar a página
+  useEffect(() => {
+    const fetchLogo = async () => {
+      try {
+        // Adicionado o cabeçalho de autenticação
+        const res = await fetch(`${API_BASE}/api/configuracoes`, { headers: getAuthHeaders() });
+        const data = await res.json();
+        if (data.logo_url) {
+          setLogoAtual(`${API_BASE}${data.logo_url}`);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar logo:", error);
+      }
+    };
+    fetchLogo();
+  }, []);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -19,14 +57,32 @@ const GerenciarLogos = () => {
     }
   };
 
-  const handleSalvar = () => {
-    // Em um projeto real, aqui você faria o upload do 'novaLogo' para o servidor
-    // e atualizaria a URL da 'logoAtual' com a resposta do servidor.
-    if (previewUrl) {
-      setLogoAtual(previewUrl);
-      setNovaLogo(null);
-      setPreviewUrl('');
-      alert('Logo atualizada com sucesso!'); // Usando alert para simplicidade
+  const handleSalvar = async () => {
+    if (!novaLogo) return;
+
+    const formData = new FormData();
+    formData.append('logo', novaLogo);
+
+    try {
+      // Adicionado o cabeçalho de autenticação (sem Content-Type)
+      const response = await fetch(`${API_BASE}/api/logo/upload`, {
+        method: 'POST',
+        headers: getAuthHeaders(false), // 'false' para não definir Content-Type
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setLogoAtual(`${API_BASE}${data.logo_url}`);
+        setNovaLogo(null);
+        setPreviewUrl('');
+        alert('Logo atualizada com sucesso!');
+      } else {
+        throw new Error('Falha no upload da logo');
+      }
+    } catch (error) {
+      console.error("Erro ao salvar logo:", error);
+      alert('Erro ao salvar a logo.');
     }
   };
 
