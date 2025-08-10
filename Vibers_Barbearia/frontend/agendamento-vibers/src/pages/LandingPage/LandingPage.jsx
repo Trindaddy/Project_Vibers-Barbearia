@@ -1,28 +1,11 @@
-import React, { useState, useEffect } from 'react'; // Adicionado useState e useEffect
+import React from 'react'; // Removido useState e useEffect
 import { useNavigate } from "react-router-dom";
 import styles from './LandingPage.module.css';
-
-const API_BASE = "http://localhost:5000";
+import { useConfig } from '../Context/ConfigContext'; // 1. Importa o hook do contexto
 
 function LandingPage() {
   const navigate = useNavigate();
-  const [logoUrl, setLogoUrl] = useState(''); // Estado para a URL da logo
-
-  // Busca a URL da logo ao carregar a página
-  useEffect(() => {
-    const fetchLogo = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/api/configuracoes`);
-        const data = await res.json();
-        if (data.logo_url) {
-          setLogoUrl(`${API_BASE}${data.logo_url}`);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar logo:", error);
-      }
-    };
-    fetchLogo();
-  }, []);
+  const { logoUrl, loading } = useConfig(); // 2. Usa o contexto
 
   const irParaAgendamento = () => {
     navigate("/agendamento");
@@ -31,8 +14,8 @@ function LandingPage() {
   return (
     <div className={styles.landingContainer}>
       <div className={styles.header}>
-        {/* O h3 foi substituído por uma imagem */}
-        {logoUrl ? (
+        {/* Mostra a logo do contexto, ou um placeholder enquanto carrega */}
+        {!loading && logoUrl ? (
           <img src={logoUrl} alt="Viber's Barbearias Logo" className={styles.logo} />
         ) : (
           <h3>Viber’s Barbearias</h3>
