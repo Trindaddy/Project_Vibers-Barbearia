@@ -30,9 +30,25 @@ export default function Agendamentos() {
   const [filtroStatus, setFiltroStatus] = useState("pendente");
   const [stats, setStats] = useState({ pendente: 0, concluido: 0, cancelado: 0, hoje: 0 });
 
+  // --- PROTEÇÃO DA ROTA ---
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      navigate('/login'); // Redireciona se não houver token
+    }
+  }, [navigate]);
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('authToken');
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    };
+  };
+
   const fetchStats = async () => {
     try {
-      const res = await fetch(`${API_BASE}/agendamentos/stats`);
+      const res = await fetch(`${API_BASE}/agendamentos/stats`, { headers: getAuthHeaders() });
       const data = await res.json();
       setStats(data);
     } catch (error) {
@@ -42,7 +58,7 @@ export default function Agendamentos() {
 
   const fetchAgendamentos = async () => {
     try {
-      const res = await fetch(`${API_BASE}/agendamentos?status=${filtroStatus}`);
+      const res = await fetch(`${API_BASE}/agendamentos?status=${filtroStatus}`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setAgendamentos(data);
@@ -56,7 +72,7 @@ export default function Agendamentos() {
     try {
       const res = await fetch(`${API_BASE}/agendamentos/${id}/status`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(),
         body: JSON.stringify({ status: novoStatus }),
       });
 
@@ -83,7 +99,10 @@ export default function Agendamentos() {
     if (!confirmar) return;
     
     try {
-      const res = await fetch(`${API_BASE}/agendamentos/${id}`, { method: "DELETE" });
+      const res = await fetch(`${API_BASE}/agendamentos/${id}`, { 
+        method: "DELETE",
+        headers: getAuthHeaders()
+      });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       setAgendamentos((prev) => prev.filter((item) => item.id !== id));
       fetchStats();
