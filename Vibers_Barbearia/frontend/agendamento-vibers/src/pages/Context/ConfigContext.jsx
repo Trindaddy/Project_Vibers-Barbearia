@@ -17,7 +17,11 @@ export const ConfigProvider = ({ children }) => {
     try {
       const res = await fetch(`${API_BASE}/api/configuracoes`);
       const data = await res.json();
-      const logoPath = data.logo_url ? JSON.parse(data.logo_url) : '';
+      
+      // --- CORREÇÃO AQUI ---
+      // O backend já nos envia o valor como uma string normal, então o JSON.parse não é necessário.
+      const logoPath = data.logo_url || ''; 
+      
       setConfig({
         logoUrl: `${API_BASE}${logoPath}`
       });
@@ -40,7 +44,7 @@ export const ConfigProvider = ({ children }) => {
   const value = {
     ...config,
     loading,
-    updateLogoUrl, // Expõe a função de atualização
+    updateLogoUrl,
   };
 
   return (
