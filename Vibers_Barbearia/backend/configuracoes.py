@@ -26,7 +26,6 @@ def token_required(f):
         return f(*args, **kwargs)
     return decorated
 
-
 # Define a pasta onde as logos serão salvas
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'svg'}
@@ -38,11 +37,33 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# --- ROTAS PROTEGIDAS ---
+# --- NOVA ROTA PÚBLICA ---
+@config_bp.route("/configuracoes/public", methods=["GET"])
+def obter_configuracoes_publicas():
+    """Busca apenas as configurações públicas, como a URL da logo."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        # Busca apenas a chave 'logo_url'
+        cursor.execute("SELECT chave, valor FROM configuracoes WHERE chave = 'logo_url'")
+        row = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        configs = {}
+        if row:
+            configs[row['chave']] = json.loads(row['valor'])
+            
+        return jsonify(configs)
+    except Exception as e:
+        print(f"Erro ao obter configurações públicas: {e}")
+        return jsonify({"error": "Erro ao buscar configurações públicas"}), 500
+
+# --- ROTAS PROTEGIDAS (PARA O PAINEL DE ADMIN) ---
 @config_bp.route("/configuracoes", methods=["GET"])
 @token_required
-def obter_configuracoes():
-    """Busca todas as configurações do banco de dados."""
+def obter_configuracoes_privadas():
+    """Busca todas as configurações para o painel de admin."""
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -55,6 +76,7 @@ def obter_configuracoes():
     except Exception as e:
         print(f"Erro ao obter configurações: {e}")
         return jsonify({"error": "Erro ao buscar configurações"}), 500
+
 
 @config_bp.route("/configuracoes", methods=["POST"])
 @token_required
