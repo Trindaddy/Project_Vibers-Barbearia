@@ -20,8 +20,9 @@ def login():
     password = data['password']
     
     # --- INÍCIO DO DIAGNÓSTICO ---
-    print("\n--- TENTATIVA DE LOGIN ---")
-    print(f"Recebido - Utilizador: '{username}', Palavra-passe: '{password}'")
+   
+    # print("\n--- TENTATIVA DE LOGIN ---")
+    # print(f"Recebido - Utilizador: '{username}', Palavra-passe: '{password}'")
 
     conn = get_db_connection()
     if not conn:
@@ -38,8 +39,8 @@ def login():
         print(f"FALHA: Utilizador '{username}' não encontrado na base de dados.")
         return jsonify({"message": "Utilizador ou palavra-passe inválidos"}), 401
     
-    print(f"SUCESSO: Utilizador '{username}' encontrado.")
-    print(f"Hash da BD: {user['password_hash']}")
+    # print(f"SUCESSO: Utilizador '{username}' encontrado.")
+    # print(f"Hash da BD: {user['password_hash']}")
     
     is_password_correct = check_password_hash(user['password_hash'], password)
     
@@ -47,7 +48,7 @@ def login():
         print("FALHA: A verificação da palavra-passe (check_password_hash) retornou FALSO.")
         return jsonify({"message": "Utilizador ou palavra-passe inválidos"}), 401
     
-    print("SUCESSO: A verificação da palavra-passe retornou VERDADEIRO.")
+    print("SUCESSO: A verificação da palavra-passe retornou VERDADEIRO.") 
     # --- FIM DO DIAGNÓSTICO ---
 
     token = jwt.encode({
