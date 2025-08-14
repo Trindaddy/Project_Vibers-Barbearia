@@ -17,7 +17,7 @@
 
 .cardContainer {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
 }
 
@@ -27,6 +27,10 @@
     border-radius: 8px;
     text-align: center;
     border: 1px solid #333;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .card h3 {
@@ -38,4 +42,35 @@
 .card p {
     margin: 0.25rem 0 0 0;
     color: #ccc;
+    font-size: 0.9rem;
+}
+
+/* --- NOVOS ESTILOS PARA O CARD DO PRÓXIMO CLIENTE --- */
+.nextClientCard {
+    background-color: #f2c12e;
+    color: #121212;
+    grid-column: 1 / -1; /* Ocupa a linha inteira em telas maiores */
+    flex-direction: row;
+    justify-content: center;
+    gap: 1rem;
+}
+
+@media (min-width: 920px) {
+    .nextClientCard {
+        grid-column: span 2; /* Ocupa 2 colunas */
+    }
+}
+
+.nextClientCard h3 {
+    color: #121212;
+    font-size: 1.5rem;
+}
+
+.nextClientCard p {
+    color: #333;
+}
+
+.nextClientIcon {
+    font-size: 2.5rem;
+    color: #121212;
 }
