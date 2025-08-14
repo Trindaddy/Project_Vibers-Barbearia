@@ -45,11 +45,10 @@
     font-size: 0.9rem;
 }
 
-/* --- NOVOS ESTILOS PARA O CARD DO PRÓXIMO CLIENTE --- */
 .nextClientCard {
     background-color: #f2c12e;
     color: #121212;
-    grid-column: 1 / -1; /* Ocupa a linha inteira em telas maiores */
+    grid-column: 1 / -1;
     flex-direction: row;
     justify-content: center;
     gap: 1rem;
@@ -57,7 +56,7 @@
 
 @media (min-width: 920px) {
     .nextClientCard {
-        grid-column: span 2; /* Ocupa 2 colunas */
+        grid-column: span 2;
     }
 }
 
