@@ -1,10 +1,9 @@
 // AdminPainel/Agendamentos.jsx
-
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // Importado para navegação
+import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import ptBR from "date-fns/locale/pt-BR";
-import { FaTrashAlt, FaArrowLeft } from "react-icons/fa"; // Ícone de voltar adicionado
+import { FaTrashAlt, FaArrowLeft } from "react-icons/fa";
 import styles from "./Agendamentos.module.css";
 import Dashboard from './Dashboard';
 import stylesFiltro from './Filtros.module.css';
@@ -24,17 +23,17 @@ function formatarTelefone(telefone) {
 const API_BASE = "http://localhost:5000/api";
 
 export default function Agendamentos() {
-  const navigate = useNavigate(); // Hook para navegação
+  const navigate = useNavigate();
   const [agendamentos, setAgendamentos] = useState([]);
   const [mensagemErro, setMensagemErro] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("pendente");
+  const [filtroData, setFiltroData] = useState("this_week"); // NOVO: State para filtro de data
   const [stats, setStats] = useState({ pendente: 0, concluido: 0, cancelado: 0, hoje: 0 });
 
-  // --- PROTEÇÃO DA ROTA ---
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (!token) {
-      navigate('/login'); // Redireciona se não houver token
+      navigate('/login');
     }
   }, [navigate]);
 
@@ -58,7 +57,8 @@ export default function Agendamentos() {
 
   const fetchAgendamentos = async () => {
     try {
-      const res = await fetch(`${API_BASE}/agendamentos?status=${filtroStatus}`, { headers: getAuthHeaders() });
+      // Adiciona o novo filtro de data à URL
+      const res = await fetch(`${API_BASE}/agendamentos?status=${filtroStatus}&date_filter=${filtroData}`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setAgendamentos(data);
@@ -75,19 +75,9 @@ export default function Agendamentos() {
         headers: getAuthHeaders(),
         body: JSON.stringify({ status: novoStatus }),
       });
-
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-
-      if (novoStatus !== filtroStatus) {
-        setAgendamentos((prev) => prev.filter((item) => item.id !== id));
-      } else {
-        setAgendamentos((prev) =>
-          prev.map((item) =>
-            item.id === id ? { ...item, status: novoStatus } : item
-          )
-        );
-      }
       
+      setAgendamentos((prev) => prev.filter((item) => item.id !== id));
       fetchStats();
     } catch (error) {
       console.error("Erro ao atualizar status:", error);
@@ -95,52 +85,59 @@ export default function Agendamentos() {
   };
 
   const handleDelete = async (id) => {
-    const confirmar = window.confirm("Tem certeza que deseja excluir?");
-    if (!confirmar) return;
-    
-    try {
-      const res = await fetch(`${API_BASE}/agendamentos/${id}`, { 
-        method: "DELETE",
-        headers: getAuthHeaders()
-      });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      setAgendamentos((prev) => prev.filter((item) => item.id !== id));
-      fetchStats();
-    } catch (error) {
-      console.error("Erro ao excluir agendamento:", error);
+    if (window.confirm("Tem certeza que deseja excluir?")) {
+      try {
+        const res = await fetch(`${API_BASE}/agendamentos/${id}`, { 
+          method: "DELETE",
+          headers: getAuthHeaders()
+        });
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        setAgendamentos((prev) => prev.filter((item) => item.id !== id));
+        fetchStats();
+      } catch (error) {
+        console.error("Erro ao excluir agendamento:", error);
+      }
     }
   };
 
   useEffect(() => {
     fetchAgendamentos();
     fetchStats();
-
     const interval = setInterval(() => {
       fetchAgendamentos();
       fetchStats();
     }, 10000);
-
     return () => clearInterval(interval);
-  }, [filtroStatus]);
+  }, [filtroStatus, filtroData]); // ATUALIZADO: Re-executa com a mudança do filtro de data
 
   const STATUS_OPCOES = ["pendente", "concluido", "cancelado"];
 
   return (
     <div className={styles.container}>
-      <Dashboard stats={stats} />
+      {/* Passa a função getAuthHeaders para o Dashboard */}
+      <Dashboard stats={stats} getAuthHeaders={getAuthHeaders} />
       
-      {/* --- NOVO CABEÇALHO COM BOTÃO DE VOLTAR --- */}
       <div className={styles.header}>
         <button onClick={() => navigate('/admin')} className={styles.botaoVoltar} title="Voltar ao Painel">
           <FaArrowLeft />
         </button>
-        <h2>Agendamentos Recebidos</h2>
+        <h2>Agendamentos</h2>
       </div>
 
-      <div className={stylesFiltro.container}>
-        <button onClick={() => setFiltroStatus('pendente')} className={filtroStatus === 'pendente' ? stylesFiltro.ativo : ''}>Pendentes</button>
-        <button onClick={() => setFiltroStatus('concluido')} className={filtroStatus === 'concluido' ? stylesFiltro.ativo : ''}>Concluídos</button>
-        <button onClick={() => setFiltroStatus('cancelado')} className={filtroStatus === 'cancelado' ? stylesFiltro.ativo : ''}>Cancelados</button>
+      {/* Container para todos os filtros */}
+      <div className={stylesFiltro.filterGroup}>
+        {/* Filtros de Data */}
+        <div className={stylesFiltro.container}>
+            <button onClick={() => setFiltroData('today')} className={filtroData === 'today' ? stylesFiltro.ativo : ''}>Hoje</button>
+            <button onClick={() => setFiltroData('this_week')} className={filtroData === 'this_week' ? stylesFiltro.ativo : ''}>Esta Semana</button>
+            <button onClick={() => setFiltroData('future')} className={filtroData === 'future' ? stylesFiltro.ativo : ''}>Futuros</button>
+        </div>
+        {/* Filtros de Status */}
+        <div className={stylesFiltro.container}>
+            <button onClick={() => setFiltroStatus('pendente')} className={filtroStatus === 'pendente' ? stylesFiltro.ativo : ''}>Pendentes</button>
+            <button onClick={() => setFiltroStatus('concluido')} className={filtroStatus === 'concluido' ? stylesFiltro.ativo : ''}>Concluídos</button>
+            <button onClick={() => setFiltroStatus('cancelado')} className={filtroStatus === 'cancelado' ? stylesFiltro.ativo : ''}>Cancelados</button>
+        </div>
       </div>
       
        <div className={styles.tabelaContainer}>
