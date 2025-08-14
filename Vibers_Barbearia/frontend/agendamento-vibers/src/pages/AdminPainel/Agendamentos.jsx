@@ -27,7 +27,7 @@ export default function Agendamentos() {
   const [agendamentos, setAgendamentos] = useState([]);
   const [mensagemErro, setMensagemErro] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("pendente");
-  const [filtroData, setFiltroData] = useState("this_week"); // NOVO: State para filtro de data
+  const [filtroData, setFiltroData] = useState("this_week");
   const [stats, setStats] = useState({ pendente: 0, concluido: 0, cancelado: 0, hoje: 0 });
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function Agendamentos() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch(`${API_BASE}/agendamentos/stats`, { headers: getAuthHeaders() });
+      const res = await fetch(`${API_BASE}/agendamentos/stats?date_filter=${filtroData}`, { headers: getAuthHeaders() });
       const data = await res.json();
       setStats(data);
     } catch (error) {
@@ -57,7 +57,6 @@ export default function Agendamentos() {
 
   const fetchAgendamentos = async () => {
     try {
-      // Adiciona o novo filtro de data à URL
       const res = await fetch(`${API_BASE}/agendamentos?status=${filtroStatus}&date_filter=${filtroData}`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
@@ -108,14 +107,26 @@ export default function Agendamentos() {
       fetchStats();
     }, 10000);
     return () => clearInterval(interval);
-  }, [filtroStatus, filtroData]); // ATUALIZADO: Re-executa com a mudança do filtro de data
+  }, [filtroStatus, filtroData]);
 
   const STATUS_OPCOES = ["pendente", "concluido", "cancelado"];
 
+  const getDashboardTitle = () => {
+    switch (filtroData) {
+        case 'today':
+            return 'Resumo de Hoje';
+        case 'this_week':
+            return 'Resumo da Semana';
+        case 'future':
+            return 'Resumo de Agendamentos Futuros';
+        default:
+            return 'Resumo';
+    }
+  };
+
   return (
     <div className={styles.container}>
-      {/* Passa a função getAuthHeaders para o Dashboard */}
-      <Dashboard stats={stats} getAuthHeaders={getAuthHeaders} />
+      <Dashboard stats={stats} getAuthHeaders={getAuthHeaders} title={getDashboardTitle()} />
       
       <div className={styles.header}>
         <button onClick={() => navigate('/admin')} className={styles.botaoVoltar} title="Voltar ao Painel">
@@ -124,15 +135,12 @@ export default function Agendamentos() {
         <h2>Agendamentos</h2>
       </div>
 
-      {/* Container para todos os filtros */}
       <div className={stylesFiltro.filterGroup}>
-        {/* Filtros de Data */}
         <div className={stylesFiltro.container}>
             <button onClick={() => setFiltroData('today')} className={filtroData === 'today' ? stylesFiltro.ativo : ''}>Hoje</button>
             <button onClick={() => setFiltroData('this_week')} className={filtroData === 'this_week' ? stylesFiltro.ativo : ''}>Esta Semana</button>
             <button onClick={() => setFiltroData('future')} className={filtroData === 'future' ? stylesFiltro.ativo : ''}>Futuros</button>
         </div>
-        {/* Filtros de Status */}
         <div className={stylesFiltro.container}>
             <button onClick={() => setFiltroStatus('pendente')} className={filtroStatus === 'pendente' ? stylesFiltro.ativo : ''}>Pendentes</button>
             <button onClick={() => setFiltroStatus('concluido')} className={filtroStatus === 'concluido' ? stylesFiltro.ativo : ''}>Concluídos</button>
@@ -204,7 +212,7 @@ export default function Agendamentos() {
             )}
           </tbody>
         </table>
-      </div>
+       </div>
     </div>
   );
 }
