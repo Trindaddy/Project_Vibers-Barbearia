@@ -15,11 +15,10 @@ export const ConfigProvider = ({ children }) => {
 
   const fetchConfig = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/configuracoes`);
+      // --- CORREÇÃO: Chama a nova rota pública que não exige login ---
+      const res = await fetch(`${API_BASE}/api/configuracoes/public`);
       const data = await res.json();
       
-      // --- CORREÇÃO AQUI ---
-      // O backend já nos envia o valor como uma string normal, então o JSON.parse não é necessário.
       const logoPath = data.logo_url || ''; 
       
       setConfig({
