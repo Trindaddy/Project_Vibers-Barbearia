@@ -18,7 +18,7 @@ def token_required(f):
         if 'Authorization' in request.headers:
             token = request.headers['Authorization'].split(" ")[1]
         if not token:
-            return jsonify({'message': 'Token de acesso faltando!'}), 401
+            return jsonify({'message': 'Token de acesso em falta!'}), 401
         try:
             jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
         except Exception as e:
@@ -298,11 +298,13 @@ def atualizar_status(id):
         print("Erro ao atualizar status:", e)
         return jsonify({"error": "Erro ao atualizar status"}), 500
 
-# --- ATUALIZAÇÃO NA ROTA DE ESTATÍSTICAS ---
 @agendamento_bp.route("/agendamentos/stats", methods=["GET"])
 @token_required
 def agendamento_stats():
-    filtro_data = request.args.get('date_filter', 'this_week')
+    # Novos parâmetros para o filtro de período
+    start_date = request.args.get('start_date', '')
+    end_date = request.args.get('end_date', '')
+
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
@@ -311,13 +313,13 @@ def agendamento_stats():
         params = []
         where_clauses = []
 
-        # --- LÓGICA DE FILTRO DE DATA CORRIGIDA ---
-        if filtro_data == 'today':
-            where_clauses.append("data = CURDATE()")
-        elif filtro_data == 'this_week':
-            where_clauses.append("YEARWEEK(data, 1) = YEARWEEK(CURDATE(), 1) AND data >= CURDATE()")
-        elif filtro_data == 'future':
-            where_clauses.append("data > CURDATE()")
+        # NOVO: Adiciona o filtro de período à consulta, se as datas forem fornecidas
+        if start_date:
+            where_clauses.append("data >= %s")
+            params.append(start_date)
+        if end_date:
+            where_clauses.append("data <= %s")
+            params.append(end_date)
 
         if where_clauses:
             query_status += " WHERE " + " AND ".join(where_clauses)
@@ -327,6 +329,7 @@ def agendamento_stats():
         cursor.execute(query_status, tuple(params))
         stats_status = cursor.fetchall()
 
+        # A contagem de 'hoje' permanece, pois é uma métrica fixa e útil
         query_hoje = "SELECT COUNT(id) as total FROM agendamentos WHERE data = CURDATE()"
         cursor.execute(query_hoje)
         stats_hoje = cursor.fetchone()
@@ -334,6 +337,7 @@ def agendamento_stats():
         cursor.close()
         conn.close()
 
+        # Garante que todos os status tenham um valor, mesmo que seja zero
         stats = {status['status']: status['total'] for status in stats_status}
         for s in ['pendente', 'concluido', 'cancelado']:
             if s not in stats:
