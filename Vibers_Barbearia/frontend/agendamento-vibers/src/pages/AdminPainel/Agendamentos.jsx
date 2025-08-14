@@ -29,6 +29,10 @@ export default function Agendamentos() {
   const [filtroStatus, setFiltroStatus] = useState("pendente");
   const [filtroData, setFiltroData] = useState("this_week");
   const [stats, setStats] = useState({ pendente: 0, concluido: 0, cancelado: 0, hoje: 0 });
+  // --- NOVOS STATES PARA OS FILTROS ---
+  const [searchTerm, setSearchTerm] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -57,7 +61,15 @@ export default function Agendamentos() {
 
   const fetchAgendamentos = async () => {
     try {
-      const res = await fetch(`${API_BASE}/agendamentos?status=${filtroStatus}&date_filter=${filtroData}`, { headers: getAuthHeaders() });
+      // Constrói a URL com os novos parâmetros de filtro
+      const params = new URLSearchParams({
+        status: filtroStatus,
+        search: searchTerm,
+        start_date: startDate,
+        end_date: endDate,
+      });
+
+      const res = await fetch(`${API_BASE}/agendamentos?${params.toString()}`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       const data = await res.json();
       setAgendamentos(data);
@@ -99,16 +111,24 @@ export default function Agendamentos() {
     }
   };
 
+  // Atualiza a busca sempre que qualquer filtro for alterado
   useEffect(() => {
     fetchAgendamentos();
-    fetchStats();
+    fetchStats(); // Opcional: pode querer que o dashboard reflita os filtros também
     const interval = setInterval(() => {
       fetchAgendamentos();
       fetchStats();
     }, 10000);
     return () => clearInterval(interval);
-  }, [filtroStatus, filtroData]);
+  }, [filtroStatus, searchTerm, startDate, endDate]);
 
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setStartDate("");
+    setEndDate("");
+  };
+
+  
   const STATUS_OPCOES = ["pendente", "concluido", "cancelado"];
 
   const getDashboardTitle = () => {
@@ -124,9 +144,9 @@ export default function Agendamentos() {
     }
   };
 
-  return (
+    return (
     <div className={styles.container}>
-      <Dashboard stats={stats} getAuthHeaders={getAuthHeaders} title={getDashboardTitle()} />
+      <Dashboard stats={stats} getAuthHeaders={getAuthHeaders} />
       
       <div className={styles.header}>
         <button onClick={() => navigate('/admin')} className={styles.botaoVoltar} title="Voltar ao Painel">
@@ -135,12 +155,24 @@ export default function Agendamentos() {
         <h2>Agendamentos</h2>
       </div>
 
+      {/* --- NOVA ÁREA DE FILTROS --- */}
       <div className={stylesFiltro.filterGroup}>
-        <div className={stylesFiltro.container}>
-            <button onClick={() => setFiltroData('today')} className={filtroData === 'today' ? stylesFiltro.ativo : ''}>Hoje</button>
-            <button onClick={() => setFiltroData('this_week')} className={filtroData === 'this_week' ? stylesFiltro.ativo : ''}>Esta Semana</button>
-            <button onClick={() => setFiltroData('future')} className={filtroData === 'future' ? stylesFiltro.ativo : ''}>Futuros</button>
+        <div className={stylesFiltro.searchAndDate}>
+          <input
+            type="text"
+            placeholder="Pesquisar por nome..."
+            className={stylesFiltro.searchInput}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <div className={stylesFiltro.datePickers}>
+            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            <span>até</span>
+            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+          </div>
+          <button onClick={handleClearFilters} className={stylesFiltro.clearButton}>Limpar</button>
         </div>
+        
         <div className={stylesFiltro.container}>
             <button onClick={() => setFiltroStatus('pendente')} className={filtroStatus === 'pendente' ? stylesFiltro.ativo : ''}>Pendentes</button>
             <button onClick={() => setFiltroStatus('concluido')} className={filtroStatus === 'concluido' ? stylesFiltro.ativo : ''}>Concluídos</button>
