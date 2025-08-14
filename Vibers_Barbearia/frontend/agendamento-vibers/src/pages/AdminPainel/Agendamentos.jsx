@@ -1,5 +1,5 @@
 // AdminPainel/Agendamentos.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import ptBR from "date-fns/locale/pt-BR";
@@ -27,100 +27,103 @@ export default function Agendamentos() {
   const [agendamentos, setAgendamentos] = useState([]);
   const [mensagemErro, setMensagemErro] = useState("");
   const [filtroStatus, setFiltroStatus] = useState("pendente");
-  const [filtroData, setFiltroData] = useState("this_week");
-  const [stats, setStats] = useState({ pendente: 0, concluido: 0, cancelado: 0, hoje: 0 });
-  // --- NOVOS STATES PARA OS FILTROS ---
   const [searchTerm, setSearchTerm] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [stats, setStats] = useState({ pendente: 0, concluido: 0, cancelado: 0, hoje: 0 });
 
-  useEffect(() => {
+  const apiFetch = useCallback(async (url, options = {}) => {
     const token = localStorage.getItem('authToken');
     if (!token) {
       navigate('/login');
+      throw new Error('No token found');
     }
+    const headers = { 'Authorization': `Bearer ${token}`, ...options.headers };
+    if (options.body) {
+        headers['Content-Type'] = 'application/json';
+    }
+    const response = await fetch(url, { ...options, headers });
+    if (response.status === 401) {
+      localStorage.removeItem('authToken');
+      navigate('/login');
+      throw new Error('Unauthorized');
+    }
+    return response;
   }, [navigate]);
 
-  const getAuthHeaders = () => {
-    const token = localStorage.getItem('authToken');
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
-    };
-  };
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/agendamentos/stats?date_filter=${filtroData}`, { headers: getAuthHeaders() });
+      const params = new URLSearchParams({
+        start_date: startDate,
+        end_date: endDate,
+      });
+      const res = await apiFetch(`${API_BASE}/agendamentos/stats?${params.toString()}`);
       const data = await res.json();
       setStats(data);
     } catch (error) {
-      console.error("Erro ao buscar estatísticas:", error);
+      if (error.message !== 'Unauthorized') {
+        console.error("Erro ao buscar estatísticas:", error);
+      }
     }
-  };
+  }, [apiFetch, startDate, endDate]);
 
-  const fetchAgendamentos = async () => {
+  const fetchAgendamentos = useCallback(async () => {
     try {
-      // Constrói a URL com os novos parâmetros de filtro
       const params = new URLSearchParams({
         status: filtroStatus,
         search: searchTerm,
         start_date: startDate,
         end_date: endDate,
       });
-
-      const res = await fetch(`${API_BASE}/agendamentos?${params.toString()}`, { headers: getAuthHeaders() });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const res = await apiFetch(`${API_BASE}/agendamentos?${params.toString()}`);
       const data = await res.json();
       setAgendamentos(data);
     } catch (error) {
-      console.error("Erro ao buscar agendamentos:", error);
-      setMensagemErro("Não foi possível carregar os agendamentos.");
+      if (error.message !== 'Unauthorized') {
+        console.error("Erro ao buscar agendamentos:", error);
+        setMensagemErro("Não foi possível carregar os agendamentos.");
+      }
     }
-  };
+  }, [apiFetch, filtroStatus, searchTerm, startDate, endDate]);
   
   const handleStatusChange = async (id, novoStatus) => {
     try {
-      const res = await fetch(`${API_BASE}/agendamentos/${id}/status`, {
+      await apiFetch(`${API_BASE}/agendamentos/${id}/status`, {
         method: "PATCH",
-        headers: getAuthHeaders(),
         body: JSON.stringify({ status: novoStatus }),
       });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      
       setAgendamentos((prev) => prev.filter((item) => item.id !== id));
       fetchStats();
     } catch (error) {
-      console.error("Erro ao atualizar status:", error);
+      if (error.message !== 'Unauthorized') {
+        console.error("Erro ao atualizar status:", error);
+      }
     }
   };
 
   const handleDelete = async (id) => {
     if (window.confirm("Tem certeza que deseja excluir?")) {
       try {
-        const res = await fetch(`${API_BASE}/agendamentos/${id}`, { 
-          method: "DELETE",
-          headers: getAuthHeaders()
-        });
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        await apiFetch(`${API_BASE}/agendamentos/${id}`, { method: "DELETE" });
         setAgendamentos((prev) => prev.filter((item) => item.id !== id));
         fetchStats();
       } catch (error) {
-        console.error("Erro ao excluir agendamento:", error);
+        if (error.message !== 'Unauthorized') {
+          console.error("Erro ao excluir agendamento:", error);
+        }
       }
     }
   };
 
-  // Atualiza a busca sempre que qualquer filtro for alterado
   useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
     fetchAgendamentos();
-    fetchStats(); // Opcional: pode querer que o dashboard reflita os filtros também
-    const interval = setInterval(() => {
-      fetchAgendamentos();
-      fetchStats();
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [filtroStatus, searchTerm, startDate, endDate]);
+    fetchStats();
+  }, [fetchAgendamentos, fetchStats, navigate]);
 
   const handleClearFilters = () => {
     setSearchTerm("");
@@ -128,25 +131,28 @@ export default function Agendamentos() {
     setEndDate("");
   };
 
-  
-  const STATUS_OPCOES = ["pendente", "concluido", "cancelado"];
-
   const getDashboardTitle = () => {
-    switch (filtroData) {
-        case 'today':
-            return 'Resumo de Hoje';
-        case 'this_week':
-            return 'Resumo da Semana';
-        case 'future':
-            return 'Resumo de Agendamentos Futuros';
-        default:
-            return 'Resumo';
+    if (startDate && endDate) {
+      const start = format(new Date(startDate + 'T00:00:00'), 'dd/MM');
+      const end = format(new Date(endDate + 'T00:00:00'), 'dd/MM/yyyy');
+      return `Resumo de ${start} a ${end}`;
     }
+    if (startDate) {
+      const start = format(new Date(startDate + 'T00:00:00'), 'dd/MM/yyyy');
+      return `Resumo a partir de ${start}`;
+    }
+    if (endDate) {
+      const end = format(new Date(endDate + 'T00:00:00'), 'dd/MM/yyyy');
+      return `Resumo até ${end}`;
+    }
+    return 'Resumo Geral';
   };
 
-    return (
+  const STATUS_OPCOES = ["pendente", "concluido", "cancelado"];
+
+  return (
     <div className={styles.container}>
-      <Dashboard stats={stats} getAuthHeaders={getAuthHeaders} />
+      <Dashboard stats={stats} title={getDashboardTitle()} />
       
       <div className={styles.header}>
         <button onClick={() => navigate('/admin')} className={styles.botaoVoltar} title="Voltar ao Painel">
@@ -155,7 +161,6 @@ export default function Agendamentos() {
         <h2>Agendamentos</h2>
       </div>
 
-      {/* --- NOVA ÁREA DE FILTROS --- */}
       <div className={stylesFiltro.filterGroup}>
         <div className={stylesFiltro.searchAndDate}>
           <input
