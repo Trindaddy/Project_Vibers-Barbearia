@@ -5,7 +5,7 @@ import { FaUserClock } from 'react-icons/fa';
 
 const API_BASE = "http://localhost:5000/api";
 
-const Dashboard = ({ stats, getAuthHeaders }) => {
+const Dashboard = ({ stats, getAuthHeaders, title }) => {
   const [proximoCliente, setProximoCliente] = useState(null);
 
   useEffect(() => {
@@ -20,16 +20,14 @@ const Dashboard = ({ stats, getAuthHeaders }) => {
     };
 
     fetchProximoCliente();
-    // Atualiza a cada 30 segundos
     const interval = setInterval(fetchProximoCliente, 30000);
     return () => clearInterval(interval);
-  }, [stats]); // Re-executa se as estatísticas gerais mudarem
+  }, [stats, getAuthHeaders]);
 
   return (
     <div className={styles.dashboardContainer}>
-      <h2 className={styles.dashboardTitle}>Resumo</h2>
+      <h2 className={styles.dashboardTitle}>{title || 'Resumo'}</h2>
       <div className={styles.cardContainer}>
-        {/* Card do Próximo Cliente */}
         <div className={`${styles.card} ${styles.nextClientCard}`}>
           <FaUserClock className={styles.nextClientIcon} />
           {proximoCliente && proximoCliente.nome ? (
@@ -45,7 +43,6 @@ const Dashboard = ({ stats, getAuthHeaders }) => {
           )}
         </div>
 
-        {/* Outros Cards */}
         <div className={styles.card}>
           <h3>{stats.hoje || 0}</h3>
           <p>Agendamentos Hoje</p>
