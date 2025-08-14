@@ -194,7 +194,6 @@ def listar_agendamentos():
         if filtro_data == 'today':
             where_clauses.append("data = CURDATE()")
         elif filtro_data == 'this_week':
-            # YEARWEEK(data, 1) considera a semana começando na Segunda-feira
             where_clauses.append("YEARWEEK(data, 1) = YEARWEEK(CURDATE(), 1)")
         elif filtro_data == 'future':
             where_clauses.append("data >= CURDATE()")
@@ -202,7 +201,7 @@ def listar_agendamentos():
         if where_clauses:
             query += " WHERE " + " AND ".join(where_clauses)
         
-        query += " ORDER BY data ASC, horario ASC" # Ordena do mais antigo para o mais novo
+        query += " ORDER BY data ASC, horario ASC"
 
         cursor.execute(query, tuple(params))
         rows = cursor.fetchall()
@@ -233,7 +232,6 @@ def proximo_agendamento():
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
-        # Busca o próximo agendamento pendente para hoje, a partir da hora atual
         query = """
             SELECT nome, sobrenome, horario 
             FROM agendamentos 
@@ -291,15 +289,32 @@ def atualizar_status(id):
         print("Erro ao atualizar status:", e)
         return jsonify({"error": "Erro ao atualizar status"}), 500
 
+# --- ATUALIZAÇÃO NA ROTA DE ESTATÍSTICAS ---
 @agendamento_bp.route("/agendamentos/stats", methods=["GET"])
 @token_required
 def agendamento_stats():
+    filtro_data = request.args.get('date_filter', 'this_week')
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
 
-        query_status = "SELECT status, COUNT(id) as total FROM agendamentos GROUP BY status"
-        cursor.execute(query_status)
+        query_status = "SELECT status, COUNT(id) as total FROM agendamentos"
+        params = []
+        where_clauses = []
+
+        if filtro_data == 'today':
+            where_clauses.append("data = CURDATE()")
+        elif filtro_data == 'this_week':
+            where_clauses.append("YEARWEEK(data, 1) = YEARWEEK(CURDATE(), 1)")
+        elif filtro_data == 'future':
+            where_clauses.append("data >= CURDATE()")
+
+        if where_clauses:
+            query_status += " WHERE " + " AND ".join(where_clauses)
+        
+        query_status += " GROUP BY status"
+
+        cursor.execute(query_status, tuple(params))
         stats_status = cursor.fetchall()
 
         query_hoje = "SELECT COUNT(id) as total FROM agendamentos WHERE data = CURDATE()"
@@ -310,6 +325,9 @@ def agendamento_stats():
         conn.close()
 
         stats = {status['status']: status['total'] for status in stats_status}
+        for s in ['pendente', 'concluido', 'cancelado']:
+            if s not in stats:
+                stats[s] = 0
         stats['hoje'] = stats_hoje['total'] if stats_hoje else 0
 
         return jsonify(stats)
