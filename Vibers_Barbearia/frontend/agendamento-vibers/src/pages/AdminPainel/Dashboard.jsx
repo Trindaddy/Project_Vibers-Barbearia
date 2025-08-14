@@ -1,28 +1,48 @@
 // AdminPainel/Dashboard.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './Dashboard.module.css';
 import { FaUserClock } from 'react-icons/fa';
 
 const API_BASE = "http://localhost:5000/api";
 
-const Dashboard = ({ stats, getAuthHeaders, title }) => {
+const Dashboard = ({ stats, title }) => {
   const [proximoCliente, setProximoCliente] = useState(null);
+  const navigate = useNavigate();
+
+  const apiFetch = useCallback(async (url, options = {}) => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+      navigate('/login');
+      throw new Error('No token found');
+    }
+    const headers = { 'Authorization': `Bearer ${token}`, ...options.headers };
+    const response = await fetch(url, { ...options, headers });
+    if (response.status === 401) {
+      localStorage.removeItem('authToken');
+      navigate('/login');
+      throw new Error('Unauthorized');
+    }
+    return response;
+  }, [navigate]);
 
   useEffect(() => {
     const fetchProximoCliente = async () => {
       try {
-        const res = await fetch(`${API_BASE}/agendamentos/next`, { headers: getAuthHeaders() });
+        const res = await apiFetch(`${API_BASE}/agendamentos/next`);
         const data = await res.json();
         setProximoCliente(data);
       } catch (error) {
-        console.error("Erro ao buscar próximo cliente:", error);
+        if (error.message !== 'Unauthorized') {
+          console.error("Erro ao buscar próximo cliente:", error);
+        }
       }
     };
 
     fetchProximoCliente();
     const interval = setInterval(fetchProximoCliente, 30000);
     return () => clearInterval(interval);
-  }, [stats, getAuthHeaders]);
+  }, [apiFetch, stats]);
 
   return (
     <div className={styles.dashboardContainer}>
@@ -42,7 +62,6 @@ const Dashboard = ({ stats, getAuthHeaders, title }) => {
             </div>
           )}
         </div>
-
         <div className={styles.card}>
           <h3>{stats.hoje || 0}</h3>
           <p>Agendamentos Hoje</p>
