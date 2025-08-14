@@ -3,7 +3,11 @@
     display: flex;
     justify-content: center;
     gap: 0.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.container:last-child {
+    margin-bottom: 0;
 }
 
 .container button {
@@ -26,4 +30,12 @@
     background-color: #f2c12e;
     color: #121212;
     border-color: #f2c12e;
+}
+
+.filterGroup {
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-bottom: 1.5rem;
+    background-color: #1e1e1e;
 }
