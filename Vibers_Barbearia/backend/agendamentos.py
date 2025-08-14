@@ -170,24 +170,41 @@ def criar_agendamento():
         return jsonify({"error": "Erro ao salvar o agendamento"}), 500
     
 # --- ROTAS PROTEGIDAS (PRECISAM DE TOKEN) ---
+# --- ATUALIZAÇÃO NA ROTA DE LISTAGEM ---
 @agendamento_bp.route("/agendamentos", methods=["GET"])
 @token_required
 def listar_agendamentos():
-    filtro_status = request.args.get('status', 'todos')
+    filtro_status = request.args.get('status', 'pendente')
+    filtro_data = request.args.get('date_filter', 'this_week') # Novo filtro de data
+
     try:
         conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         
         query = "SELECT * FROM agendamentos"
         params = []
+        where_clauses = []
 
+        # Adiciona filtro de status
         if filtro_status != 'todos':
-            query += " WHERE status = %s"
+            where_clauses.append("status = %s")
             params.append(filtro_status)
         
-        query += " ORDER BY data DESC, horario DESC"
+        # Adiciona filtro de data
+        if filtro_data == 'today':
+            where_clauses.append("data = CURDATE()")
+        elif filtro_data == 'this_week':
+            # YEARWEEK(data, 1) considera a semana começando na Segunda-feira
+            where_clauses.append("YEARWEEK(data, 1) = YEARWEEK(CURDATE(), 1)")
+        elif filtro_data == 'future':
+            where_clauses.append("data >= CURDATE()")
 
-        cursor.execute(query, params)
+        if where_clauses:
+            query += " WHERE " + " AND ".join(where_clauses)
+        
+        query += " ORDER BY data ASC, horario ASC" # Ordena do mais antigo para o mais novo
+
+        cursor.execute(query, tuple(params))
         rows = cursor.fetchall()
         
         for row in rows:
@@ -208,6 +225,37 @@ def listar_agendamentos():
         print("Erro ao listar agendamentos:", e)
         return jsonify({"error": "Erro ao listar agendamentos"}), 500
 
+# --- NOVA ROTA PARA O PRÓXIMO CLIENTE ---
+@agendamento_bp.route("/agendamentos/next", methods=["GET"])
+@token_required
+def proximo_agendamento():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Busca o próximo agendamento pendente para hoje, a partir da hora atual
+        query = """
+            SELECT nome, sobrenome, horario 
+            FROM agendamentos 
+            WHERE data = CURDATE() AND status = 'pendente' AND horario > CURTIME()
+            ORDER BY horario ASC 
+            LIMIT 1
+        """
+        cursor.execute(query)
+        proximo = cursor.fetchone()
+        
+        if proximo and isinstance(proximo.get("horario"), timedelta):
+            horario_td = proximo["horario"]
+            horas = int(horario_td.total_seconds() // 3600)
+            minutos = int((horario_td.total_seconds() % 3600) // 60)
+            proximo["horario"] = f"{horas:02d}:{minutos:02d}"
+
+        cursor.close()
+        conn.close()
+        return jsonify(proximo if proximo else {})
+    except Exception as e:
+        print(f"Erro ao buscar próximo cliente: {e}")
+        return jsonify({"error": "Erro ao buscar próximo cliente"}), 500
 
 @agendamento_bp.route("/agendamentos/<int:id>", methods=["DELETE"])
 @token_required
