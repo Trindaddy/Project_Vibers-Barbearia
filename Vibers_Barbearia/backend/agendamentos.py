@@ -174,8 +174,11 @@ def criar_agendamento():
 @agendamento_bp.route("/agendamentos", methods=["GET"])
 @token_required
 def listar_agendamentos():
+    # Novos parâmetros da URL
     filtro_status = request.args.get('status', 'pendente')
-    filtro_data = request.args.get('date_filter', 'this_week') # Novo filtro de data
+    search_term = request.args.get('search', '')
+    start_date = request.args.get('start_date', '')
+    end_date = request.args.get('end_date', '')
 
     try:
         conn = get_db_connection()
@@ -185,18 +188,24 @@ def listar_agendamentos():
         params = []
         where_clauses = []
 
-        # Adiciona filtro de status
+        # Filtro de status (continua igual)
         if filtro_status != 'todos':
             where_clauses.append("status = %s")
             params.append(filtro_status)
         
-        # Adiciona filtro de data
-        if filtro_data == 'today':
-            where_clauses.append("data = CURDATE()")
-        elif filtro_data == 'this_week':
-            where_clauses.append("YEARWEEK(data, 1) = YEARWEEK(CURDATE(), 1)")
-        elif filtro_data == 'future':
-            where_clauses.append("data >= CURDATE()")
+        # NOVO: Filtro por termo de pesquisa (nome ou sobrenome)
+        if search_term:
+            where_clauses.append("(nome LIKE %s OR sobrenome LIKE %s)")
+            params.append(f"%{search_term}%")
+            params.append(f"%{search_term}%")
+
+        # NOVO: Filtro por período
+        if start_date:
+            where_clauses.append("data >= %s")
+            params.append(start_date)
+        if end_date:
+            where_clauses.append("data <= %s")
+            params.append(end_date)
 
         if where_clauses:
             query += " WHERE " + " AND ".join(where_clauses)
@@ -302,12 +311,13 @@ def agendamento_stats():
         params = []
         where_clauses = []
 
+        # --- LÓGICA DE FILTRO DE DATA CORRIGIDA ---
         if filtro_data == 'today':
             where_clauses.append("data = CURDATE()")
         elif filtro_data == 'this_week':
-            where_clauses.append("YEARWEEK(data, 1) = YEARWEEK(CURDATE(), 1)")
+            where_clauses.append("YEARWEEK(data, 1) = YEARWEEK(CURDATE(), 1) AND data >= CURDATE()")
         elif filtro_data == 'future':
-            where_clauses.append("data >= CURDATE()")
+            where_clauses.append("data > CURDATE()")
 
         if where_clauses:
             query_status += " WHERE " + " AND ".join(where_clauses)
