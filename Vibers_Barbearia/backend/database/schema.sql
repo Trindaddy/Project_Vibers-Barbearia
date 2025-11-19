@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS barbearias (
   nome VARCHAR(100) NOT NULL,
   slug VARCHAR(50) UNIQUE NOT NULL, -- Ex: 'vibers', 'cortes-finos' (usado na URL)
   endereco TEXT,
-  modelo_agendamento VARCHAR(20) DEFAULT 'hora_marcada', -- 'hora_marcada' ou 'fila'
+  modelo_agendamento VARCHAR(20) DEFAULT 'fila', -- 'hora_marcada' ou 'fila'
   criado_em TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
