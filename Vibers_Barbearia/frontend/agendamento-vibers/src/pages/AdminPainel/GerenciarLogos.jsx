@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaUpload, FaPalette } from 'react-icons/fa';
 import styles from './GerenciarLogos.module.css';
-import { useConfig } from '../Context/ConfigContext'; // 1. Importa o hook do contexto
+import { useConfig } from '../../context/ConfigContext';
 
 const API_BASE = "http://localhost:5000";
 

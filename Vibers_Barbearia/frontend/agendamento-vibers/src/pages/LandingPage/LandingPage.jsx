@@ -1,7 +1,7 @@
 import React from 'react'; // Removido useState e useEffect
 import { useNavigate } from "react-router-dom";
 import styles from './LandingPage.module.css';
-import { useConfig } from '../Context/ConfigContext'; // 1. Importa o hook do contexto
+import { useConfig } from '../../context/ConfigContext';
 
 function LandingPage() {
   const navigate = useNavigate();

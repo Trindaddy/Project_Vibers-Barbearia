@@ -2,14 +2,14 @@ from flask import Flask, send_from_directory, jsonify, request
 from flask_cors import CORS
 import os
 from dotenv import load_dotenv
-from database.database import get_db_connection, get_dict_cursor
+from database import get_db_connection, get_dict_cursor
 
 # Carrega as variáveis de ambiente no início de tudo
 load_dotenv()
 
-from agendamentos import agendamento_bp
-from configuracoes import config_bp
-from auth import auth_bp
+from api.agendamentos import agendamento_bp
+from api.configuracoes import config_bp
+from api.auth import auth_bp
 
 app = Flask(__name__)
 

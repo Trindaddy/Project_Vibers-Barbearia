@@ -1,6 +1,6 @@
 import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ConfigProvider } from './pages/Context/ConfigContext.jsx'; // 1. Importa o Provedor
+import { ConfigProvider } from './context/ConfigContext.jsx';
 
 // Componentes
 import LandingPage from './pages/LandingPage/LandingPage';

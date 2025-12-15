@@ -2,7 +2,7 @@
 import sys
 from getpass import getpass
 from werkzeug.security import generate_password_hash
-from database.database import get_db_connection
+from database import get_db_connection
 
 def create_user():
     """
